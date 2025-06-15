@@ -1,5 +1,5 @@
 import ErrorMessage from "src/errors/ErrorMessage";
-import { IAnnouncementCreate } from "src/interfaces/IAnnouncementCreate";
+import { IAnnouncementCreate } from "src/interfaces/IAnnouncement";
 import Announcement from "src/models/Announcement";
 import AnnouncementRepository from "src/repositories/AnnouncementRepository";
 

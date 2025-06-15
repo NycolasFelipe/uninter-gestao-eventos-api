@@ -1,5 +1,5 @@
 import ErrorMessage from "src/errors/ErrorMessage";
-import { IEventCreate } from "src/interfaces/IEventCreate";
+import { IEventCreate } from "src/interfaces/IEvent";
 import Event from "src/models/Event";
 import EventRepository from "src/repositories/EventRepository";
 import TaskService from "./TaskService";

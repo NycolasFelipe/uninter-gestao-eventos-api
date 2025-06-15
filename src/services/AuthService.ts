@@ -23,6 +23,7 @@ const service = new UserService();
 class AuthService {
   /** Autentica um usuário com email e senha, retornando um token JWT em caso de sucesso */
   async login(email: string, password: string): Promise<IToken> {
+    // Valida existência de usuário com o email informado
     const user = await service.getByEmail(email);
     if (!user) {
       throw new ErrorMessage("Credenciais inválidas", 401);
@@ -32,6 +33,11 @@ class AuthService {
     const isPasswordCorrect = compareHashPassword(password, user.passwordHash).success;
     if (!isPasswordCorrect) {
       throw new ErrorMessage("Credenciais inválidas", 401);
+    }
+
+    // Verifica se usuário está com acesso ativo
+    if (!user.isActive) {
+      throw new ErrorMessage("Usuário com acesso desativado", 401);
     }
 
     // Gera token do usuário

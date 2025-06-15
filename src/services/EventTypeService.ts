@@ -1,5 +1,5 @@
 import ErrorMessage from "src/errors/ErrorMessage";
-import { IEventTypeCreate } from "src/interfaces/IEventTypeCreate";
+import { IEventTypeCreate } from "src/interfaces/IEventType";
 import EventType from "src/models/EventType";
 import EventTypeRepository from "src/repositories/EventTypeRepository";
 import EventService from "./EventService";

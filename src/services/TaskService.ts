@@ -1,5 +1,5 @@
 import ErrorMessage from "src/errors/ErrorMessage";
-import { ITaskCreate } from "src/interfaces/ITaskCreate";
+import { ITaskCreate } from "src/interfaces/ITask";
 import Task from "src/models/Task";
 import TaskRepository from "src/repositories/TaskRepository";
 

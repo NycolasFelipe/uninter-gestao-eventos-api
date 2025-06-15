@@ -1,5 +1,5 @@
 import ErrorMessage from "src/errors/ErrorMessage";
-import { IPermissionCreate } from "src/interfaces/IPermissionCreate";
+import { IPermissionCreate } from "src/interfaces/IPermission";
 import Permission from "src/models/Permission";
 import PermissionRepository from "src/repositories/PermissionRepository";
 import RolePermissionRepository from "src/repositories/RolePermissionRepository";
