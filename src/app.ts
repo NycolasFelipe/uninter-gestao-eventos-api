@@ -6,7 +6,16 @@ import helmet from "helmet";
 import sequelize from "src/config/sequelize";
 
 // Importação das rotas da aplicação
-//
+import announcement from "src/routes/AnnouncementRoute";
+import auth from "src/routes/AuthRoute";
+import event from "src/routes/EventRoute";
+import eventType from "src/routes/EventTypeRoute";
+import permission from "src/routes/PermissionRoute";
+import role from "src/routes/RoleRoute";
+import school from "src/routes/SchoolRoute";
+import task from "src/routes/TaskRoute";
+import user from "src/routes/UserRoute";
+import venue from "src/routes/VenueRoute";
 
 // Importação dos middlewares
 import errorHandlerMiddleware from "./middlewares/errorHandlerMiddleware";
@@ -21,7 +30,16 @@ app.use(helmet());
 app.use(express.json());
 
 // Rotas da aplicação
-// app.use();
+app.use("/api/v0/announcements", announcement);
+app.use("/api/v0/auth", auth);
+app.use("/api/v0/events", event);
+app.use("/api/v0/event-types", eventType);
+app.use("/api/v0/permissions", permission);
+app.use("/api/v0/roles", role);
+app.use("/api/v0/schools", school);
+app.use("/api/v0/tasks", task);
+app.use("/api/v0/users", user);
+app.use("/api/v0/venues", venue);
 
 // Middlewares
 app.use(errorHandlerMiddleware);
