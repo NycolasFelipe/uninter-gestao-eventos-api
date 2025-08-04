@@ -16,6 +16,16 @@ class RoleController {
     }
   }
 
+  /** Obtém todos os cargos e os usuários vinculados */
+  async getAllWithUsers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const roles = await service.getAllWithUsers();
+      res.status(200).send(roles);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   /** Obtém um cargo específico por ID */
   async getById(req: Request, res: Response, next: NextFunction) {
     try {

@@ -1,7 +1,17 @@
 import ErrorMessage from "src/errors/ErrorMessage";
+
+// Interfaces
 import { IEventCreate } from "src/interfaces/IEvent";
+import { IEventUpdateCreate } from "src/interfaces/IEventUpdates";
+
+// Models
 import Event from "src/models/Event";
+
+// Repositories
 import EventRepository from "src/repositories/EventRepository";
+import EventUpdatesRepository from "src/repositories/EventUpdatesRepository";
+
+// Services
 import TaskService from "./TaskService";
 
 // Instância do repositório de tarefas
@@ -10,12 +20,16 @@ const repository = new EventRepository();
 /** Serviço para operações relacionadas a eventos */
 class EventService {
   /** Obtém todos os eventos existentes */
-  async getAll(): Promise<Event[]> {
-    return repository.getAll();
+  async getAll(params?: { status?: string, limit?: number }): Promise<Event[]> {
+    return repository.getAll(params);
   }
 
-  async getAllByEventTypeId(eventTypeId: number): Promise<Event[]> {
-    return repository.getAllByEventTypeId(eventTypeId);
+  async getAllByEventTypeId(eventTypeIds: number[]): Promise<Event[]> {
+    return repository.getAllByEventTypeId(eventTypeIds);
+  }
+
+  async getAllByEventStatus(statusIds: string[]): Promise<Event[]> {
+    return repository.getAllByEventStatus(statusIds);
   }
 
   async getAllBySchoolId(id: number): Promise<Event[]> {
@@ -32,8 +46,19 @@ class EventService {
   }
 
   /** Cria um novo evento */
-  async create(data: IEventCreate): Promise<Event> {
-    return repository.create(data);
+  async create(organizerUserId: bigint, data: IEventCreate): Promise<Event> {
+    const event = await repository.create({ ...data, organizerUserId });
+
+    // Registra criação do evento
+    const eventUpdatesRepository = new EventUpdatesRepository();
+    const eventUpdatesCreate: IEventUpdateCreate = {
+      eventId: event.id,
+      status: event.status,
+      userId: event.organizerUserId,
+    }
+    await eventUpdatesRepository.create(eventUpdatesCreate);
+
+    return event;
   }
 
   /** Exclui um evento existente com tratamento de dependências */
@@ -60,12 +85,23 @@ class EventService {
   /** Atualiza dados de um evento */
   async update(id: number, data: Partial<Event>): Promise<void> {
     // Verifica existência prévia
-    await this.getById(id);
+    const event = await this.getById(id);
 
     // Executa atualização
     const affectedRows = await repository.update(id, data);
     if (affectedRows === 0) {
       throw new ErrorMessage(`Nenhum dado foi alterado para o evento ${id}.`, 409);
+    }
+
+    if (data.status) {
+      // Registra atualização do evento
+      const eventUpdatesRepository = new EventUpdatesRepository();
+      const eventUpdatesCreate: IEventUpdateCreate = {
+        eventId: event.id,
+        status: event.status,
+        userId: event.organizer.id,
+      }
+      await eventUpdatesRepository.create(eventUpdatesCreate);
     }
   }
 }

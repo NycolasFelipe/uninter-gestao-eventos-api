@@ -29,6 +29,9 @@ class VenueService {
 
   /** Cria um novo local */
   async create(data: IVenueCreate): Promise<Venue> {
+    if (data.capacity && data.capacity < 1) {
+      throw new ErrorMessage("Capacidade não pode ser menor que 1.", 400);
+    }
     return repository.create(data);
   }
 
@@ -62,10 +65,7 @@ class VenueService {
     await this.getById(id);
 
     // Executa atualização
-    const affectedRows = await repository.update(id, data);
-    if (affectedRows === 0) {
-      throw new ErrorMessage(`Nenhum dado foi alterado para o local ${id}.`, 409);
-    }
+    await repository.update(id, data);
   }
 }
 

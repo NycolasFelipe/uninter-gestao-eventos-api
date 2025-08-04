@@ -1,6 +1,7 @@
 import Announcement from "./Announcement";
 import Event from "./Event";
 import EventType from "./EventType";
+import EventUpdates from "./EventUpdates";
 import Permission from "./Permission";
 import Role from "./Role";
 import RolePermission from "./RolePermission";
@@ -15,6 +16,7 @@ export default [
   Announcement,
   Event,
   EventType,
+  EventUpdates,
   Permission,
   Role,
   RolePermission,

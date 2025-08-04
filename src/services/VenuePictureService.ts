@@ -8,7 +8,14 @@ const repository = new VenuePictureRepository();
 
 class VenuePictureService {
   /** Obtém todas as fotos de locais cadastradas */
-  async getAll(): Promise<VenuePicture[]> {
+  async getAll(query: { id?: string; venueId?: string }): Promise<VenuePicture[]> {
+    if (query.id) {
+      const picture = await this.getById(Number(query.id));
+      return picture ? [picture] : [];
+    }
+    if (query.venueId) {
+      return this.getAllByVenueId(Number(query.venueId));
+    }
     return repository.getAll();
   }
 
@@ -27,8 +34,10 @@ class VenuePictureService {
   }
 
   /** Cria uma nova foto de local */
-  async create(data: IVenuePictureCreate): Promise<VenuePicture> {
-    return repository.create(data);
+  async create(data: IVenuePictureCreate[]): Promise<void> {
+    for (const item of data) {
+      await repository.create(item);
+    }
   }
 
   /** Exclui uma foto de local */
@@ -45,10 +54,7 @@ class VenuePictureService {
     await this.getById(id);
 
     // Executa atualização
-    const affectedRows = await repository.update(id, data);
-    if (affectedRows === 0) {
-      throw new ErrorMessage(`Nenhum dado foi alterado para o usuário ${id}.`, 409);
-    }
+    await repository.update(id, data);
   }
 }
 

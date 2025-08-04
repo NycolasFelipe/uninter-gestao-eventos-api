@@ -101,12 +101,11 @@ class User extends Model {
   })
   roleId!: number | null;
 
-  // Relacionamentos
-  @BelongsTo(() => School)
-  school!: School;
-
   @BelongsTo(() => Role)
   role!: Role;
+
+  @BelongsTo(() => School)
+  school!: School;
 }
 
 export default User;

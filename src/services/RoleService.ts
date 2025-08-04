@@ -15,6 +15,11 @@ class RoleService {
     return repository.getAll();
   }
 
+  /** Obtém todos os cargos e os usuários vinculados */
+  async getAllWithUsers(): Promise<Role[]> {
+    return repository.getAllWithUsers();
+  }
+
   /** Busca um cargo por ID */
   async getById(id: number): Promise<Role> {
     const role = await repository.getById(id);
@@ -56,24 +61,24 @@ class RoleService {
     // Validar existência do cargo
     await this.getById(id);
 
-    // Inicialia serviços/permissões necessárias
-    const permissionService = new PermissionService();
-    const rolePermissionRepository = new RolePermissionRepository();
-
-    // Verifica se permissionsIds tem formato correto
+    // Validar formato dos IDs
     if (!Array.isArray(permissionsIds)) {
       throw new ErrorMessage("Campo permissionsIds precisa ser no formato number[]", 400);
     }
 
     // Validar existência das permissões
+    const permissionService = new PermissionService();
     for (const permissionId of permissionsIds) {
       await permissionService.getById(permissionId);
     }
 
-    // Remove todas as permissões vinculadas atualmente
+    // Atualizar permissões
+    const rolePermissionRepository = new RolePermissionRepository();
+
+    // Remover permissões existentes
     await rolePermissionRepository.deleteByRoleId(id);
 
-    // Vincula permissões atualizadas
+    // Adicionar novas permissões
     for (const permissionId of permissionsIds) {
       await rolePermissionRepository.create({ roleId: id, permissionId });
     }

@@ -1,3 +1,4 @@
+import { Sequelize } from "sequelize";
 import BaseRepository from "./BaseRepository";
 
 // Models
@@ -5,12 +6,37 @@ import User from "src/models/User";
 import Role from "src/models/Role";
 import Permission from "src/models/Permission";
 import School from "src/models/School";
-import RolePermission from "src/models/RolePermission";
 
 /** Repositório para operações com o modelo User */
 class UserRepository extends BaseRepository<User> {
   constructor() {
     super(User);
+  }
+
+  /** Obtém todos os usuários */
+  async getAll() {
+    const users = await this.model.findAll({
+      attributes: {
+        exclude: ['passwordHash', 'schoolId', 'roleId'],
+        include: [
+          [Sequelize.col('role.roleName'), 'role'],
+          [Sequelize.col('school.name'), 'school']
+        ]
+      },
+      include: [{
+        model: Role,
+        as: 'role',
+        attributes: []
+      },
+      {
+        model: School,
+        as: 'school',
+        attributes: []
+      }],
+      raw: true
+    });
+
+    return users;
   }
 
   /** Obtém detalhes de um usuário por ID incluindo relacionamentos */
@@ -20,10 +46,9 @@ class UserRepository extends BaseRepository<User> {
       include: [{
         model: Role,
         include: [{
-          model: RolePermission,
-          include: [{
-            model: Permission
-          }]
+          model: Permission,
+          through: { attributes: [] },
+          attributes: ['id', 'permissionName', 'description']
         }]
       }, {
         model: School
@@ -55,7 +80,9 @@ class UserRepository extends BaseRepository<User> {
       include: [{
         model: Role,
         include: [{
-          model: Permission // Associação direta entre Role e Permission
+          model: Permission,
+          through: { attributes: [] },
+          attributes: ['id', 'permissionName', 'description']
         }]
       }],
       attributes: {

@@ -18,6 +18,8 @@ import user from "src/routes/UserRoute";
 import venue from "src/routes/VenueRoute";
 
 // Importação dos middlewares
+import authenticateJWT from "./middlewares/authenticateJWT";
+import resourceAccessMiddleware from "./middlewares/resourceAccessMiddleware";
 import errorHandlerMiddleware from "./middlewares/errorHandlerMiddleware";
 
 // Criação da instância do Express
@@ -29,19 +31,24 @@ app.use(cors());
 app.use(helmet());
 app.use(express.json());
 
-// Rotas da aplicação
-app.use("/api/v0/announcements", announcement);
+// Rotas sem autenticação
 app.use("/api/v0/auth", auth);
-app.use("/api/v0/events", event);
-app.use("/api/v0/event-types", eventType);
-app.use("/api/v0/permissions", permission);
-app.use("/api/v0/roles", role);
-app.use("/api/v0/schools", school);
-app.use("/api/v0/tasks", task);
-app.use("/api/v0/users", user);
-app.use("/api/v0/venues", venue);
 
-// Middlewares
+// Middleware de autenticação JWT aplicado globalmente
+app.use(authenticateJWT);
+
+// Rotas autenticadas da aplicação com controle de acesso
+app.use("/api/v0/announcements", resourceAccessMiddleware, announcement);
+app.use("/api/v0/events", resourceAccessMiddleware, event);
+app.use("/api/v0/event-types", resourceAccessMiddleware, eventType);
+app.use("/api/v0/permissions", resourceAccessMiddleware, permission);
+app.use("/api/v0/roles", resourceAccessMiddleware, role);
+app.use("/api/v0/schools", resourceAccessMiddleware, school);
+app.use("/api/v0/tasks", resourceAccessMiddleware, task);
+app.use("/api/v0/users", resourceAccessMiddleware, user);
+app.use("/api/v0/venues", resourceAccessMiddleware, venue);
+
+// Middleware de tratamento de erros
 app.use(errorHandlerMiddleware);
 
 // Sincronização com o banco de dados e inicialização do servidor

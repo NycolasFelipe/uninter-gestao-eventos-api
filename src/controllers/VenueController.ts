@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import VenueService from "src/services/VenueService";
 
-// Instância do serviço de locais
+// Instância do serviço de locais 
 const service = new VenueService();
 
 /** Controlador para operações relacionadas a locais */
@@ -10,6 +10,15 @@ class VenueController {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const venues = await service.getAll();
+      res.status(200).send(venues);
+    } catch (error) {
+      next(error);
+    }
+  }
+  /** Obtém todos os locais cadastrados de uma escola */
+  async getAllBySchoolId(req: Request, res: Response, next: NextFunction) {
+    try {
+      const venues = await service.getAllBySchoolId(Number(req.params.id));
       res.status(200).send(venues);
     } catch (error) {
       next(error);
@@ -40,7 +49,7 @@ class VenueController {
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
       await service.delete(Number(req.params.id));
-      res.status(201).send({ message: "Local removido com sucesso." });
+      res.status(200).send({ message: "Local removido com sucesso." });
     } catch (error) {
       next(error);
     }

@@ -6,11 +6,39 @@ const service = new VenuePictureService();
 
 /** Controlador para operações relacionadas a imagens de locais */
 class VenuePictureController {
+  async getAll(req: Request, res: Response, next: NextFunction) {
+    const options = req.query;
+    try {
+      const venues = await service.getAll(options);
+      res.status(200).send(venues);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const venue = await service.getById(Number(req.params.id));
+      res.status(200).send(venue);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getAllByVenueId(req: Request, res: Response, next: NextFunction) {
+    try {
+      const venue = await service.getAllByVenueId(Number(req.params.id));
+      res.status(200).send(venue);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   /** Cria uma nova imagem associada a um local */
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const venuePicture = await service.create(req.body);
-      res.status(201).send(venuePicture);
+      await service.create(req.body);
+      res.status(201).send({ message: "Imagens do local salvas com sucesso." });
     } catch (error) {
       next(error);
     }

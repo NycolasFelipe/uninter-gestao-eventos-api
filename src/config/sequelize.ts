@@ -2,6 +2,12 @@ import { Sequelize } from 'sequelize-typescript';
 import * as dotenv from 'dotenv';
 import models from '../models/index';
 
+// Seeds
+import seedPermissions from 'src/seeds/permissions';
+import seedSchools from 'src/seeds/schools';
+import seedVenues from 'src/seeds/venues';
+import seedVenuePictures from 'src/seeds/venuesPictures';
+
 dotenv.config({ path: process.env.NODE_ENV === 'test' ? ".env.test" : ".env" });
 
 // Recuperar e validar variáveis de ambiente
@@ -17,7 +23,7 @@ if (!DB_NAME || !DB_USER || !DB_PASSWORD || !DB_HOST || !DB_PORT) {
 
 // Função assíncrona para configuração do banco
 async function setupDatabase() {
-  // 1. Criar banco se não existir
+  // Criar banco se não existir
   const setupSequelize = new Sequelize({
     dialect: "mysql",
     username: DB_USER,
@@ -34,7 +40,7 @@ async function setupDatabase() {
     await setupSequelize.close();
   }
 
-  // 2. Criar instância principal conectada ao banco
+  // Criar instância principal conectada ao banco
   const mainSequelize = new Sequelize({
     dialect: "mysql",
     database: DB_NAME,
@@ -42,9 +48,15 @@ async function setupDatabase() {
     password: DB_PASSWORD,
     host: DB_HOST,
     port: DB_PORT,
-    logging: process.env.NODE_ENV === 'test' ? false : console.log,
+    logging: false,
     models
   });
+
+  // Popula banco com dados iniciais
+  await seedPermissions();
+  await seedSchools();
+  await seedVenues();
+  await seedVenuePictures();
 
   return mainSequelize;
 }

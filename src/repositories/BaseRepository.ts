@@ -1,4 +1,4 @@
-import { Model, ModelStatic, Op, WhereOptions } from 'sequelize';
+import { Attributes, FindOptions, Model, ModelStatic, WhereOptions } from 'sequelize';
 import { MakeNullishOptional } from 'sequelize/types/utils';
 
 /** Classe abstrata base para repositórios com operações CRUD comuns */
@@ -7,8 +7,8 @@ abstract class BaseRepository<T extends Model> {
   constructor(protected model: ModelStatic<T>) { }
 
   /** Obtém todos os registros */
-  async getAll(): Promise<T[]> {
-    return this.model.findAll();
+  async getAll(options?: FindOptions<Attributes<T>> | undefined): Promise<T[]> {
+    return this.model.findAll(options);
   }
 
   /** Busca um registro pela chave primária */
@@ -19,6 +19,11 @@ abstract class BaseRepository<T extends Model> {
   /** Cria um novo registro */
   async create(data: Omit<MakeNullishOptional<T['_creationAttributes']>, 'id'>): Promise<T> {
     return this.model.create(data as MakeNullishOptional<T['_creationAttributes']>);
+  }
+
+  /** Busca ou atualiza um registro */
+  async findOrCreate(data: Omit<MakeNullishOptional<T['_creationAttributes']>, 'id'>): Promise<[T, boolean]> {
+    return this.model.findOrCreate(data as MakeNullishOptional<T['_creationAttributes']>);
   }
 
   /** Atualiza registros por ID */
@@ -34,11 +39,6 @@ abstract class BaseRepository<T extends Model> {
     return this.model.destroy({
       where: { id } as unknown as WhereOptions<T>
     });
-  }
-
-  /** Fornece acesso aos operadores de consulta do Sequelize */
-  protected getOperator() {
-    return Op;
   }
 }
 

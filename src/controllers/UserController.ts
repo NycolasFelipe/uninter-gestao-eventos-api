@@ -11,15 +11,7 @@ class UserController {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const users = await service.getAll();
-
-      // Remove passwordHash de todos os usuários
-      const usersData = users.map(user => {
-        const userData = user.get({ plain: true });
-        const { passwordHash, ...rest } = userData;
-        return rest;
-      });
-
-      res.status(200).send(usersData);
+      res.status(200).send(users);
     } catch (error) {
       next(error);
     }
@@ -51,8 +43,6 @@ class UserController {
   /** Cria um novo usuário */
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      console.log(req.body);
-      
       const user = await service.create(req.body);
       const userData = user.get({ plain: true });
       const { passwordHash, ...userWithoutPassword } = userData; // Remove senha

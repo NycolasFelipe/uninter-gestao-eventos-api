@@ -11,6 +11,7 @@ import {
 import School from "./School";
 import EventType from "./EventType";
 import User from "./User";
+import Venue from "./Venue";
 
 // Definindo Enums
 export enum EventStatus {
@@ -74,6 +75,14 @@ class Event extends Model {
   })
   organizerUserId!: bigint;
 
+  @ForeignKey(() => Venue)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    field: 'venueId'
+  })
+  venueId!: number;
+
   @Column({
     type: DataType.STRING(100),
     allowNull: false,
@@ -119,11 +128,18 @@ class Event extends Model {
   isPublic!: boolean;
 
   @Column({
-    type: DataType.DATEONLY,
+    type: DataType.DATE,
     allowNull: false,
-    field: 'registrationDeadline'
+    field: 'startDate'
   })
-  registrationDeadline!: Date;
+  startDate!: Date;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+    field: 'endDate'
+  })
+  endDate!: Date;
 
   // Relacionamentos
   @BelongsTo(() => School)
@@ -134,6 +150,9 @@ class Event extends Model {
 
   @BelongsTo(() => User)
   organizer!: User;
+
+  @BelongsTo(() => Venue)
+  venue!: Venue;
 }
 
 export default Event;

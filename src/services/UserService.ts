@@ -1,5 +1,6 @@
 import ErrorMessage from "src/errors/ErrorMessage";
 import { IUserCreate } from "src/interfaces/IUser";
+import Permission from "src/models/Permission";
 import User from "src/models/User";
 import UserRepository from "src/repositories/UserRepository";
 import hashPassword from "src/util/hashPassword";
@@ -40,6 +41,12 @@ class UserService {
       throw new ErrorMessage(`Usuário com id ${id} não encontrado.`, 404);
     }
     return user;
+  }
+
+  /** Obtém todas as permissões de um usuário */
+  async getAllPermissions(id: bigint): Promise<Permission[]> {
+    const userDetails = await this.getDetailById(id);
+    return userDetails.role.permissions;
   }
 
   /** Cria um novo usuário */
