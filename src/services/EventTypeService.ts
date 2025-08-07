@@ -35,7 +35,7 @@ class EventTypeService {
 
     // Verifica vinculação existente com evento
     const eventService = new EventService();
-    const existingEventWithEventType = await eventService.getAllByEventTypeId(id);
+    const existingEventWithEventType = await eventService.getAllByEventTypeId([id]);
 
     if (existingEventWithEventType.length > 0) {
       const events = existingEventWithEventType.map(event => event.id)?.join(", ");

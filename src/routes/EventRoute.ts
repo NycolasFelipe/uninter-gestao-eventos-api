@@ -6,6 +6,7 @@ const router = express.Router();
 const controller = new EventController();
 
 router.get("/", authenticateJWT, controller.getAll);
+router.get("/detailed", authenticateJWT, controller.getAllDetailed)
 router.get("/type", authenticateJWT, controller.getAllByEventTypeId);
 router.get("/status", authenticateJWT, controller.getAllByEventStatus);
 router.get("/school/:schoolId/", authenticateJWT, controller.getAllBySchoolId);

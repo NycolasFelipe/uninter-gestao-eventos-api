@@ -5,6 +5,7 @@ import {
   Table,
   ForeignKey,
   BelongsTo,
+  HasMany,
 } from "sequelize-typescript";
 
 // Models
@@ -12,6 +13,7 @@ import School from "./School";
 import EventType from "./EventType";
 import User from "./User";
 import Venue from "./Venue";
+import Subscription from "./Subscription";
 
 // Definindo Enums
 export enum EventStatus {
@@ -153,6 +155,9 @@ class Event extends Model {
 
   @BelongsTo(() => Venue)
   venue!: Venue;
+
+  @HasMany(() => Subscription)
+  subscriptions!: Subscription[];
 }
 
 export default Event;

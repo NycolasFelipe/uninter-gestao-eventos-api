@@ -7,6 +7,12 @@ import seedPermissions from 'src/seeds/permissions';
 import seedSchools from 'src/seeds/schools';
 import seedVenues from 'src/seeds/venues';
 import seedVenuePictures from 'src/seeds/venuesPictures';
+import seedRoles from 'src/seeds/roles';
+import seedUsers from 'src/seeds/user';
+import seedRolesPermissions from 'src/seeds/rolesPermissions';
+import seedEventTypes from 'src/seeds/eventType';
+import seedEvents from 'src/seeds/events';
+import seedSubscriptions from 'src/seeds/subscriptions';
 
 dotenv.config({ path: process.env.NODE_ENV === 'test' ? ".env.test" : ".env" });
 
@@ -52,11 +58,18 @@ async function setupDatabase() {
     models
   });
 
-  // Popula banco com dados iniciais
+  await mainSequelize.sync();
+
   await seedPermissions();
+  await seedRoles();
+  await seedRolesPermissions();
   await seedSchools();
   await seedVenues();
   await seedVenuePictures();
+  await seedUsers();
+  await seedEventTypes();
+  await seedEvents();
+  await seedSubscriptions();
 
   return mainSequelize;
 }

@@ -10,6 +10,7 @@ import User from "src/models/User";
 import Venue from "src/models/Venue";
 import VenuePicture from "src/models/VenuePicture";
 import Role from "src/models/Role";
+import Subscription from "src/models/Subscription";
 
 class EventRepository extends BaseRepository<Event> {
   constructor() {
@@ -40,7 +41,8 @@ class EventRepository extends BaseRepository<Event> {
       ],
       attributes: {
         exclude: ["schoolId", "eventTypeId", "organizerUserId", "venueId"]
-      }
+      },
+      order: [['startDate', 'asc']]
     }
   }
 
@@ -75,8 +77,40 @@ class EventRepository extends BaseRepository<Event> {
     return this.model.create(data);
   }
 
-  async getAll(options?: FindOptions<Attributes<Event>>): Promise<Event[]> {
+  async getAll(options?:
+    FindOptions<Attributes<Event>>
+    & {
+      status?: string | string[],
+      schoolId?: number
+    }): Promise<Event[]> {
+
     const defaultOptions = this.getDefaultOptions();
+
+    if (options?.status) {
+      const statusValues = typeof options.status === 'string'
+        ? options.status.split(',').map(s => s.trim())
+        : options.status;
+
+      options = {
+        ...options,
+        where: {
+          ...options.where,
+          status: {
+            [Op.in]: statusValues
+          }
+        }
+      }
+    }
+
+    if (options?.schoolId) {
+      options = {
+        ...options,
+        where: {
+          ...options.where,
+          schoolId: options.schoolId
+        }
+      }
+    }
 
     // Combina as opções padrão com as opções passadas
     const mergedOptions: FindOptions<Attributes<Event>> = {
@@ -86,7 +120,46 @@ class EventRepository extends BaseRepository<Event> {
         ...defaultOptions.where,
         ...options?.where,
       },
-    };
+    }
+
+    return this.model.findAll(mergedOptions);
+  }
+
+  async getAllDetailed(options?: FindOptions<Attributes<Event>> & { status?: string | string[] }): Promise<Event[]> {
+    const defaultOptions = this.getDefaultOptions();
+
+    // Se options.status existe, mova para options.where.status
+    if (options?.status) {
+      const statusValues = typeof options.status === 'string'
+        ? options.status.split(',').map(s => s.trim())
+        : options.status;
+
+      options = {
+        ...options,
+        where: {
+          ...options.where,
+          status: {
+            [Op.in]: statusValues
+          }
+        }
+      }
+    }
+
+    // Combina as opções padrão com as opções passadas
+    const mergedOptions: FindOptions<Attributes<Event>> = {
+      ...defaultOptions,
+      ...options,
+      where: {
+        ...defaultOptions.where,
+        ...options?.where,
+      },
+      include: [{
+        model: Subscription,
+        include: [{
+          model: User
+        }]
+      }]
+    }
 
     return this.model.findAll(mergedOptions);
   }

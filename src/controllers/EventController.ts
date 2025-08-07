@@ -1,6 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import { decode, JwtPayload } from "jsonwebtoken";
+
+// Services
 import EventService from "src/services/EventService";
+import UserService from "src/services/UserService";
+
+// Util
+import checkUserPermission from "src/util/checkUserPermission";
+import extractTokenId from "src/util/extractTokenId";
 
 // Instância do serviço de eventos
 const service = new EventService();
@@ -9,10 +16,37 @@ const service = new EventService();
 class EventController {
   /** Obtém todos os eventos */
   async getAll(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = extractTokenId(req);
+      const { status, limit } = req.query as { status?: string; limit?: string };
+
+      // Verifica permissões e obtém schoolId se necessário
+      const hasFullPermission = await checkUserPermission(BigInt(userId), 'schools.get');
+      const schoolId = hasFullPermission
+        ? undefined
+        : Number((await new UserService().getById(BigInt(userId))).schoolId);
+
+      // Construção dos parâmetros de consulta
+      const queryParams = {
+        ...(status && { status }),
+        ...(limit && { limit: Number(limit) }),
+        ...(schoolId && { schoolId })
+      }
+
+      const events = await service.getAll(queryParams);
+      res.status(200).json(events);
+
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /** Obtém todos os eventos com detalhes */
+  async getAllDetailed(req: Request, res: Response, next: NextFunction) {
     const { status } = req.query;
     const { limit } = req.query;
     try {
-      const events = await service.getAll({
+      const events = await service.getAllDetailed({
         ...(status && { status: status.toString() }),
         ...(limit && { limit: Number(limit) })
       });

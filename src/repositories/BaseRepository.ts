@@ -35,9 +35,9 @@ abstract class BaseRepository<T extends Model> {
   }
 
   /** Exclui registros por ID */
-  async delete(id: number | bigint): Promise<number> {
+  async delete(eventId: number | bigint, userId?: number): Promise<number> {
     return this.model.destroy({
-      where: { id } as unknown as WhereOptions<T>
+      where: { eventId, userId } as unknown as WhereOptions<T>
     });
   }
 }

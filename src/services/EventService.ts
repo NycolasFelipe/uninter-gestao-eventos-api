@@ -19,19 +19,30 @@ const repository = new EventRepository();
 
 /** Serviço para operações relacionadas a eventos */
 class EventService {
-  /** Obtém todos os eventos existentes */
-  async getAll(params?: { status?: string, limit?: number }): Promise<Event[]> {
+  /** Obtém todos os eventos */
+  async getAll(params?: {
+    status?: string,
+    limit?: number,
+    schoolId?: number
+  }): Promise<Event[]> {
     return repository.getAll(params);
   }
+  /** Obtém todos os eventos com detalhes */
+  async getAllDetailed(params?: { status?: string, limit?: number }): Promise<Event[]> {
+    return repository.getAllDetailed(params);
+  }
 
+  /** Obtém todos os eventos por tipo de evento */
   async getAllByEventTypeId(eventTypeIds: number[]): Promise<Event[]> {
     return repository.getAllByEventTypeId(eventTypeIds);
   }
 
+  /** Obtém todos os eventos por status */
   async getAllByEventStatus(statusIds: string[]): Promise<Event[]> {
     return repository.getAllByEventStatus(statusIds);
   }
 
+  /** Obtém todos os eventos associados a uma escola específica */
   async getAllBySchoolId(id: number): Promise<Event[]> {
     return repository.getAllBySchoolId(id);
   }

@@ -2,6 +2,10 @@ import { Request, Response, NextFunction } from "express";
 import { IUserCreateResponse } from "src/interfaces/IUser";
 import UserService from "src/services/UserService";
 
+// Util
+import checkUserPermission from "src/util/checkUserPermission";
+import extractTokenId from "src/util/extractTokenId";
+
 // Instância do serviço de usuários
 const service = new UserService();
 
@@ -29,12 +33,32 @@ class UserController {
     }
   }
 
-  /** Obtém detalhes completos de um usuário (com relacionamentos) */
+  /** Obtém detalhes completos de um usuário */
   async getDetailById(req: Request, res: Response, next: NextFunction) {
     try {
-      // Obtém usuário com roles, permissões e escola
-      const user = await service.getDetailById(BigInt(req.params.id));
-      res.status(200).send(user);
+      const { id: requestedId } = req.params;
+      const authenticatedUserId = extractTokenId(req);
+
+      // Determinar qual ID usar
+      let userId: bigint;
+
+      // Caso de visualização do próprio usuário
+      if (!requestedId || requestedId === authenticatedUserId) {
+        userId = BigInt(authenticatedUserId);
+
+        // Caso de visualização de outro usuário - verificar permissão
+      } else {
+        const hasPermission = await checkUserPermission(BigInt(authenticatedUserId), 'users.get');
+        if (!hasPermission) {
+          res.status(403).json({ message: 'Acesso não autorizado para visualização de outros usuários' });
+        }
+        userId = BigInt(requestedId);
+      }
+
+      // Obter e retornar os dados do usuário
+      const user = await service.getDetailById(userId);
+      res.status(200).json(user);
+
     } catch (error) {
       next(error);
     }
