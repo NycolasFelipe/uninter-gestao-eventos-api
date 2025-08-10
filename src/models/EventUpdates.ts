@@ -1,8 +1,11 @@
-import { Column, DataType, ForeignKey, Model, Table } from "sequelize-typescript";
+import { BelongsTo, Column, DataType, ForeignKey, Model, Table } from "sequelize-typescript";
 
 // Models
 import User from "./User";
-import Event, { EventStatus } from "./Event";
+import Event from "./Event";
+
+// Enums
+import { EventStatus } from "src/enums/EventStatusEnum";
 
 @Table({
   tableName: 'event_updates',
@@ -47,6 +50,9 @@ class EventUpdates extends Model {
     field: 'updateDate'
   })
   updateDate!: Date;
+
+  @BelongsTo(() => User)
+  user!: User;
 }
 
 export default EventUpdates;

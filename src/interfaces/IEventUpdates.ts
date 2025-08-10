@@ -1,4 +1,4 @@
-import { EventStatus } from "src/models/Event";
+import { EventStatus } from "src/enums/EventStatusEnum";
 
 export interface IEventUpdateCreate {
   userId: bigint;

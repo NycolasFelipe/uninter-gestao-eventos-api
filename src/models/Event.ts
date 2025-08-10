@@ -14,17 +14,10 @@ import EventType from "./EventType";
 import User from "./User";
 import Venue from "./Venue";
 import Subscription from "./Subscription";
+import EventUpdates from "./EventUpdates";
 
-// Definindo Enums
-export enum EventStatus {
-  Draft = "Draft",
-  Planned = "Planned",
-  Published = "Published",
-  Ongoing = "Ongoing",
-  Completed = "Completed",
-  Cancelled = "Cancelled",
-  Archived = "Archived",
-}
+// Enums
+import { EventStatus } from "src/enums/EventStatusEnum";
 
 @Table({
   tableName: 'event',
@@ -158,6 +151,9 @@ class Event extends Model {
 
   @HasMany(() => Subscription)
   subscriptions!: Subscription[];
+
+  @HasMany(() => EventUpdates)
+  updates!: EventUpdates[];
 }
 
 export default Event;

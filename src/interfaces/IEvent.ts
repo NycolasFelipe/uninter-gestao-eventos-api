@@ -1,4 +1,5 @@
-import { EventStatus } from "src/models/Event";
+import { EventStatus } from "src/enums/EventStatusEnum";
+import { IBaseParams } from "./IParams";
 
 export interface IEventCreate {
   name: string;
@@ -13,4 +14,19 @@ export interface IEventCreate {
   organizerUserId: bigint;
   startDate: Date;
   endDate: Date;
+}
+
+export interface IEventParams extends IBaseParams {
+  eventId?: number;
+  schoolId?: number;
+  eventTypeId?: number;
+  eventTypeIds?: string;
+  organizerUserId?: bigint;
+  venueId?: number;
+  name?: string;
+  targetAudience?: string;
+  status?: string;
+  isPublic?: boolean;
+  startDate?: Date;
+  endDate?: Date;
 }
