@@ -1,18 +1,17 @@
 import express from "express";
 import EventController from "src/controllers/EventController";
-import authenticateJWT from "src/middlewares/authenticateJWT";
 
 const router = express.Router();
 const controller = new EventController();
 
-router.get("/", authenticateJWT, controller.getAll);
-router.get("/detailed", authenticateJWT, controller.getAllDetailed)
-router.get("/type", authenticateJWT, controller.getAllByEventTypeId);
-router.get("/status", authenticateJWT, controller.getAllByEventStatus);
-router.get("/school/:schoolId/", authenticateJWT, controller.getAllBySchoolId);
-router.get("/:id", authenticateJWT, controller.getById);
-router.delete("/:id", authenticateJWT, controller.delete);
-router.post("/", authenticateJWT, controller.create);
-router.patch("/:id", authenticateJWT, controller.update);
+router.get("/", controller.getAll);
+router.get("/detailed", controller.getAllDetailed);
+router.get("/type", controller.getAllByEventTypeId);
+router.get("/status", controller.getAllByEventStatus);
+router.get("/school/:schoolId/", controller.getAllBySchoolId);
+router.get("/:id", controller.getById);
+router.delete("/:id", controller.delete);
+router.post("/", controller.create);
+router.patch("/:id", controller.update);
 
 export default router;

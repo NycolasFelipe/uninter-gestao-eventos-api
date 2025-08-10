@@ -1,7 +1,5 @@
 import EventRepository from "src/repositories/EventRepository";
-import { EventStatus } from "src/models/Event";
-
-const eventRepository = new EventRepository();
+import { EventStatus } from "src/enums/EventStatusEnum";
 
 async function seedEvents() {
   const events = [
@@ -375,7 +373,7 @@ Nosso simulado seguirá rigorosamente o formato do ENEM, proporcionando aos alun
   ];
 
   for (const event of events) {
-    await eventRepository.findOrCreate({
+    await EventRepository.findOrCreate({
       where: { id: event.id },
       defaults: event
     });

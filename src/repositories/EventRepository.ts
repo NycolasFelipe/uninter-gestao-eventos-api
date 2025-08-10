@@ -1,4 +1,4 @@
-import { Attributes, FindOptions, Op, Optional } from "sequelize";
+import { Op, Optional } from "sequelize";
 import ErrorMessage from "src/errors/ErrorMessage";
 import BaseRepository from "./BaseRepository";
 
@@ -9,41 +9,16 @@ import EventType from "src/models/EventType";
 import User from "src/models/User";
 import Venue from "src/models/Venue";
 import VenuePicture from "src/models/VenuePicture";
-import Role from "src/models/Role";
 import Subscription from "src/models/Subscription";
+
+// Interfaces
+import { IParams } from "src/interfaces/IParams";
+import EventUpdates from "src/models/EventUpdates";
+
 
 class EventRepository extends BaseRepository<Event> {
   constructor() {
     super(Event);
-  }
-
-  private getDefaultOptions(): FindOptions {
-    return {
-      include: [
-        { model: School },
-        { model: EventType },
-        {
-          model: User,
-          include: [
-            {
-              model: Role,
-              attributes: ["roleName"]
-            }
-          ],
-          attributes: ["id", "firstName", "lastName", "email", "profilePictureUrl"]
-        },
-        {
-          model: Venue,
-          include: [
-            { model: VenuePicture }
-          ]
-        }
-      ],
-      attributes: {
-        exclude: ["schoolId", "eventTypeId", "organizerUserId", "venueId"]
-      },
-      order: [['startDate', 'asc']]
-    }
   }
 
   async create(data: Omit<Optional<any, string>, "id">): Promise<Event> {
@@ -77,124 +52,161 @@ class EventRepository extends BaseRepository<Event> {
     return this.model.create(data);
   }
 
-  async getAll(options?:
-    FindOptions<Attributes<Event>>
-    & {
-      status?: string | string[],
-      schoolId?: number
-    }): Promise<Event[]> {
+  async getAll(params: IParams): Promise<Event[]> {
+    const statusNames = typeof params.status === 'string'
+      ? params.status.split(',').map(s => s.trim())
+      : params.status;
 
-    const defaultOptions = this.getDefaultOptions();
+    const eventTypesIds = typeof params.eventTypeIds === 'string'
+      ? params.eventTypeIds.split(',').map(q => Number(q.trim()))
+      : [];
 
-    if (options?.status) {
-      const statusValues = typeof options.status === 'string'
-        ? options.status.split(',').map(s => s.trim())
-        : options.status;
+    const where = {
+      ...(params && params.eventId && {
+        id: params.eventId
+      }),
+      ...(params && params.status && {
+        status: { [Op.in]: statusNames }
+      }),
+      ...(params && params.schoolId && {
+        schoolId: params.schoolId
+      }),
+      ...(params && params.eventTypeIds && {
+        eventTypeId: { [Op.in]: eventTypesIds }
+      })
+    }
 
-      options = {
-        ...options,
-        where: {
-          ...options.where,
-          status: {
-            [Op.in]: statusValues
+    return this.model.findAll({
+      where,
+      include: [
+        {
+          model: Venue,
+          attributes: {
+            exclude: ["schoolId"]
           }
-        }
-      }
-    }
-
-    if (options?.schoolId) {
-      options = {
-        ...options,
-        where: {
-          ...options.where,
-          schoolId: options.schoolId
-        }
-      }
-    }
-
-    // Combina as opções padrão com as opções passadas
-    const mergedOptions: FindOptions<Attributes<Event>> = {
-      ...defaultOptions,
-      ...options,
-      where: {
-        ...defaultOptions.where,
-        ...options?.where,
+        },
+        { model: School },
+        { model: EventType }
+      ],
+      attributes: {
+        exclude: ["schoolId", "eventTypeId", "organizerUserId", "venueId"]
       },
-    }
-
-    return this.model.findAll(mergedOptions);
+      limit: params.limit || 100,
+      offset: params.offset || 0
+    });
   }
 
-  async getAllDetailed(options?: FindOptions<Attributes<Event>> & { status?: string | string[] }): Promise<Event[]> {
-    const defaultOptions = this.getDefaultOptions();
+  async getAllDetailed(params: IParams): Promise<Event[]> {
+    const statusValues = typeof params.status === 'string'
+      ? params.status.split(',').map(s => s.trim())
+      : params.status;
 
-    // Se options.status existe, mova para options.where.status
-    if (options?.status) {
-      const statusValues = typeof options.status === 'string'
-        ? options.status.split(',').map(s => s.trim())
-        : options.status;
+    const where = {
+      ...(params && params.eventId && {
+        id: params.eventId
+      }),
+      ...(params && params.status && {
+        status: { [Op.in]: statusValues }
+      }),
+      ...(params && params.schoolId && {
+        schoolId: params.schoolId
+      }),
+    }
 
-      options = {
-        ...options,
-        where: {
-          ...options.where,
-          status: {
-            [Op.in]: statusValues
+    return this.model.findAll({
+      where,
+      include: [
+        {
+          model: Subscription,
+          attributes: ["updatedAt"],
+          include: [{
+            model: User,
+            attributes: ["firstName", "lastName", "email"]
+          }],
+        },
+        {
+          model: Venue,
+          include: [{
+            model: VenuePicture,
+            attributes: {
+              exclude: ["venueId"]
+            }
+          }],
+          attributes: {
+            exclude: ["schoolId"]
           }
-        }
-      }
-    }
-
-    // Combina as opções padrão com as opções passadas
-    const mergedOptions: FindOptions<Attributes<Event>> = {
-      ...defaultOptions,
-      ...options,
-      where: {
-        ...defaultOptions.where,
-        ...options?.where,
+        },
+        { model: School },
+        { model: EventType }
+      ],
+      attributes: {
+        exclude: ["schoolId", "eventTypeId", "organizerUserId", "venueId"]
       },
-      include: [{
-        model: Subscription,
-        include: [{
-          model: User
-        }]
-      }]
+      limit: params.limit || 100,
+      offset: params.offset || 0
+    });
+  }
+
+  async getWithId(params: IParams): Promise<Event | null> {
+    const where = {
+      id: params.eventId,
+      ...(params && params.schoolId && {
+        schoolId: params.schoolId
+      })
     }
 
-    return this.model.findAll(mergedOptions);
-  }
-
-  async getAllByEventTypeId(eventTypeIds: number[]): Promise<Event[]> {
-    return this.model.findAll({
-      ...this.getDefaultOptions(),
-      where: {
-        eventTypeId: { [Op.in]: eventTypeIds }
-      }
-    });
-  }
-
-  async getAllByEventStatus(statusIds: string[]): Promise<Event[]> {
-    return this.model.findAll({
-      ...this.getDefaultOptions(),
-      where: {
-        status: { [Op.in]: statusIds }
-      }
-    });
-  }
-
-  async getAllBySchoolId(schoolId: number): Promise<Event[]> {
-    return this.model.findAll({
-      ...this.getDefaultOptions(),
-      where: { schoolId }
-    });
-  }
-
-  async getById(id: number | bigint): Promise<Event | null> {
     return this.model.findOne({
-      ...this.getDefaultOptions(),
-      where: { id }
-    })
+      where,
+      include: [
+        {
+          model: Subscription,
+          attributes: ["updatedAt"],
+          include: [{
+            model: User,
+            attributes: ["firstName", "lastName", "email"]
+          }],
+        },
+        {
+          model: Venue,
+          include: [{
+            model: VenuePicture,
+            attributes: {
+              exclude: ["venueId"]
+            }
+          }],
+          attributes: {
+            exclude: ["schoolId"]
+          }
+        },
+        {
+          model: EventUpdates,
+          attributes: {
+            exclude: ["userId", "eventId"],
+          },
+          include: [{
+            model: User,
+            attributes: ["firstName", "lastName", "email"]
+          }],
+        },
+        { model: School },
+        { model: EventType }
+      ],
+      attributes: {
+        exclude: ["schoolId", "eventTypeId", "organizerUserId", "venueId"]
+      },
+    });
+  }
+
+  async deleteById(params: IParams): Promise<number> {
+    const where = {
+      id: params.eventId,
+      ...(params.organizerUserId && {
+        organizerUserId: params.organizerUserId
+      })
+    }
+
+    return this.delete({ where });
   }
 }
 
-export default EventRepository;
+export default new EventRepository();

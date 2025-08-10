@@ -1,7 +1,7 @@
 import ErrorMessage from "src/errors/ErrorMessage";
 
 // Interfaces
-import { IEventCreate } from "src/interfaces/IEvent";
+import { IEventCreate, IEventParams } from "src/interfaces/IEvent";
 import { IEventUpdateCreate } from "src/interfaces/IEventUpdates";
 
 // Models
@@ -14,51 +14,40 @@ import EventUpdatesRepository from "src/repositories/EventUpdatesRepository";
 // Services
 import TaskService from "./TaskService";
 
-// Instância do repositório de tarefas
-const repository = new EventRepository();
+// Util
+import processQueryParams from "src/util/processQueryParams";
+
 
 /** Serviço para operações relacionadas a eventos */
 class EventService {
+
   /** Obtém todos os eventos */
-  async getAll(params?: {
-    status?: string,
-    limit?: number,
-    schoolId?: number
-  }): Promise<Event[]> {
-    return repository.getAll(params);
+  async getAll(params: IEventParams): Promise<Event[]> {
+    const processedParams = await processQueryParams(params);
+    return EventRepository.getAll(processedParams);
   }
+
   /** Obtém todos os eventos com detalhes */
-  async getAllDetailed(params?: { status?: string, limit?: number }): Promise<Event[]> {
-    return repository.getAllDetailed(params);
-  }
-
-  /** Obtém todos os eventos por tipo de evento */
-  async getAllByEventTypeId(eventTypeIds: number[]): Promise<Event[]> {
-    return repository.getAllByEventTypeId(eventTypeIds);
-  }
-
-  /** Obtém todos os eventos por status */
-  async getAllByEventStatus(statusIds: string[]): Promise<Event[]> {
-    return repository.getAllByEventStatus(statusIds);
-  }
-
-  /** Obtém todos os eventos associados a uma escola específica */
-  async getAllBySchoolId(id: number): Promise<Event[]> {
-    return repository.getAllBySchoolId(id);
+  async getAllDetailed(params: IEventParams): Promise<Event[]> {
+    const processedParams = await processQueryParams(params);
+    return EventRepository.getAllDetailed(processedParams);
   }
 
   /** Busca um evento por ID */
-  async getById(id: number): Promise<Event> {
-    const event = await repository.getById(id);
+  async getById(params: IEventParams): Promise<Event> {
+    const processedParams = await processQueryParams(params);
+    const event = await EventRepository.getWithId(processedParams);
     if (!event) {
-      throw new ErrorMessage(`Evento com id ${id} não encontrado.`, 404);
+      throw new ErrorMessage("Evento não encontrado.", 404);
     }
     return event;
   }
 
   /** Cria um novo evento */
-  async create(organizerUserId: bigint, data: IEventCreate): Promise<Event> {
-    const event = await repository.create({ ...data, organizerUserId });
+  async create(data: IEventCreate): Promise<Event> {
+    const userId = await processQueryParams();
+    const organizerUserId = userId.userId || userId.adminId;
+    const event = await EventRepository.create({ ...data, organizerUserId });
 
     // Registra criação do evento
     const eventUpdatesRepository = new EventUpdatesRepository();
@@ -68,44 +57,52 @@ class EventService {
       userId: event.organizerUserId,
     }
     await eventUpdatesRepository.create(eventUpdatesCreate);
-
     return event;
   }
 
   /** Exclui um evento existente com tratamento de dependências */
   async delete(id: number): Promise<void> {
     // Valida existência do evento
-    await this.getById(id);
+    await this.getById({ eventId: id });
 
     // Desvincula evento de todos os anúncios e tarefas
-    const taskService = new TaskService();
-    const tasks = await taskService.getAllByEventId(id);
+    const tasks = await TaskService.getAllByEventId(id);
 
     for (const task of tasks) {
       try {
-        await taskService.delete(task.id);
+        await TaskService.delete(task.id);
       } catch (error) {
         console.error(`Erro ao remover tarefa ${task.id} do evento ${id}.`);
       }
     }
 
+    // Obtém id do usuário que solicitou a exclusão
+    const userId = await processQueryParams();
+
     // Executa exclusão após remover dependências
-    await repository.delete(id);
+    const affectedRows = await EventRepository.deleteById({
+      eventId: id,
+      organizerUserId: userId.userId
+    });
+
+    if (affectedRows === 0) {
+      throw new ErrorMessage(`Não foi possível remover o evento.`, 409);
+    }
   }
 
   /** Atualiza dados de um evento */
   async update(id: number, data: Partial<Event>): Promise<void> {
     // Verifica existência prévia
-    const event = await this.getById(id);
+    const event = await this.getById({ eventId: id });
 
     // Executa atualização
-    const affectedRows = await repository.update(id, data);
+    const affectedRows = await EventRepository.update(id, data);
     if (affectedRows === 0) {
       throw new ErrorMessage(`Nenhum dado foi alterado para o evento ${id}.`, 409);
     }
 
+    // Registra atualização do evento
     if (data.status) {
-      // Registra atualização do evento
       const eventUpdatesRepository = new EventUpdatesRepository();
       const eventUpdatesCreate: IEventUpdateCreate = {
         eventId: event.id,
@@ -117,4 +114,4 @@ class EventService {
   }
 }
 
-export default EventService;
+export default new EventService();

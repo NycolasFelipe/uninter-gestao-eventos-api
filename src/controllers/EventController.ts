@@ -1,41 +1,23 @@
 import { Request, Response, NextFunction } from "express";
-import { decode, JwtPayload } from "jsonwebtoken";
 
 // Services
 import EventService from "src/services/EventService";
-import UserService from "src/services/UserService";
 
-// Util
-import checkUserPermission from "src/util/checkUserPermission";
-import extractTokenId from "src/util/extractTokenId";
-
-// Instância do serviço de eventos
-const service = new EventService();
 
 /** Controlador para operações relacionadas a eventos */
 class EventController {
   /** Obtém todos os eventos */
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = extractTokenId(req);
-      const { status, limit } = req.query as { status?: string; limit?: string };
-
-      // Verifica permissões e obtém schoolId se necessário
-      const hasFullPermission = await checkUserPermission(BigInt(userId), 'schools.get');
-      const schoolId = hasFullPermission
-        ? undefined
-        : Number((await new UserService().getById(BigInt(userId))).schoolId);
-
-      // Construção dos parâmetros de consulta
+      const { status, schoolId, limit, offset } = req.query;
       const queryParams = {
-        ...(status && { status }),
+        ...(status && { status: status as string }),
         ...(limit && { limit: Number(limit) }),
-        ...(schoolId && { schoolId })
+        ...(offset && { offset: Number(offset) }),
+        ...(schoolId && { schoolId: Number(schoolId) }),
       }
-
-      const events = await service.getAll(queryParams);
+      const events = await EventService.getAll(queryParams);
       res.status(200).json(events);
-
     } catch (error) {
       next(error);
     }
@@ -43,12 +25,12 @@ class EventController {
 
   /** Obtém todos os eventos com detalhes */
   async getAllDetailed(req: Request, res: Response, next: NextFunction) {
-    const { status } = req.query;
-    const { limit } = req.query;
+    const { status, limit, offset } = req.query;
     try {
-      const events = await service.getAllDetailed({
-        ...(status && { status: status.toString() }),
-        ...(limit && { limit: Number(limit) })
+      const events = await EventService.getAllDetailed({
+        ...(status && { status: status as string }),
+        ...(limit && { limit: Number(limit) }),
+        ...(offset && { offset: Number(offset) })
       });
       res.status(200).send(events);
     } catch (error) {
@@ -58,10 +40,13 @@ class EventController {
 
   /** Obtém todos os eventos de um tipo por ID */
   async getAllByEventTypeId(req: Request, res: Response, next: NextFunction) {
-    const queryIds = req.query.id?.toString()?.split(",");
-    const ids = queryIds?.map(q => q.trim())?.map(q => Number(q)) || [];
+    const { eventTypeIds, limit, offset } = req.query;
     try {
-      const events = await service.getAllByEventTypeId(ids);
+      const events = await EventService.getAll({
+        eventTypeIds: eventTypeIds as string,
+        ...(limit && { limit: Number(limit) }),
+        ...(offset && { offset: Number(offset) })
+      });
       res.status(200).send(events);
     } catch (error) {
       next(error);
@@ -70,10 +55,13 @@ class EventController {
 
   /** Obtém todos os eventos de um tipo por status */
   async getAllByEventStatus(req: Request, res: Response, next: NextFunction) {
-    const queryIds = req.query.status?.toString()?.split(",");
-    const ids = queryIds?.map(q => q.trim()) || [];
+    const { status, limit, offset } = req.query;
     try {
-      const events = await service.getAllByEventStatus(ids);
+      const events = await EventService.getAll({
+        status: status as string,
+        ...(limit && { limit: Number(limit) }),
+        ...(offset && { offset: Number(offset) }),
+      });
       res.status(200).send(events);
     } catch (error) {
       next(error);
@@ -82,8 +70,13 @@ class EventController {
 
   /** Obtém todos os eventos de uma escola por ID */
   async getAllBySchoolId(req: Request, res: Response, next: NextFunction) {
+    const { limit, offset } = req.query;
     try {
-      const events = await service.getAllBySchoolId(Number(req.params.schoolId));
+      const events = await EventService.getAll({
+        schoolId: Number(req.params.schoolId),
+        ...(limit && { limit: Number(limit) }),
+        ...(offset && { offset: Number(offset) }),
+      });
       res.status(200).send(events);
     } catch (error) {
       next(error);
@@ -93,7 +86,9 @@ class EventController {
   /** Obtém um evento específico por ID */
   async getById(req: Request, res: Response, next: NextFunction) {
     try {
-      const event = await service.getById(Number(req.params.id));
+      const event = await EventService.getById({
+        eventId: Number(req.params.id)
+      });
       res.status(200).send(event);
     } catch (error) {
       next(error);
@@ -103,11 +98,7 @@ class EventController {
   /** Cria um novo evento */
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const authHeader = req.headers.authorization;
-      const token = authHeader && authHeader.split(" ")[1];
-      const decodedToken = decode(token!) as JwtPayload;
-      const organizerUserId = decodedToken.id.toString();
-      const event = await service.create(organizerUserId, req.body);
+      const event = await EventService.create(req.body);
       res.status(201).send(event);
     } catch (error) {
       next(error);
@@ -117,7 +108,7 @@ class EventController {
   /** Exclui um evento existente */
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      await service.delete(Number(req.params.id));
+      await EventService.delete(Number(req.params.id));
       res.status(201).send({ message: "Evento removido com sucesso." });
     } catch (error) {
       next(error);
@@ -127,7 +118,7 @@ class EventController {
   /** Atualiza um evento existente */
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      await service.update(Number(req.params.id), req.body);
+      await EventService.update(Number(req.params.id), req.body);
       res.status(200).send({ message: "Evento atualizado com sucesso." });
     } catch (error) {
       next(error);
