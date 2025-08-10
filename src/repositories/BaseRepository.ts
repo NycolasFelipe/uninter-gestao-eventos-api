@@ -35,10 +35,18 @@ abstract class BaseRepository<T extends Model> {
   }
 
   /** Exclui registros por ID */
-  async delete(eventId: number | bigint, userId?: number): Promise<number> {
-    return this.model.destroy({
-      where: { eventId, userId } as unknown as WhereOptions<T>
-    });
+  async delete(options?: FindOptions<Attributes<T>> | undefined): Promise<number>;
+  async delete(id: number | bigint): Promise<number>;
+  async delete(identifier?: number | bigint | FindOptions<Attributes<T>>): Promise<number> {
+    if (typeof identifier === 'number' || typeof identifier === 'bigint') {
+      // Exclusão por id
+      return this.model.destroy({
+        where: { id: identifier } as unknown as WhereOptions<T>
+      });
+    } else {
+      // Exclusão por opções de busca
+      return this.model.destroy(identifier);
+    }
   }
 }
 
