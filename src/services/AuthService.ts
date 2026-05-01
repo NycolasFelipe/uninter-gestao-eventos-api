@@ -1,27 +1,29 @@
 import { Model } from "sequelize-typescript";
-import { IToken } from "src/interfaces/IToken";
-import jwt from "jsonwebtoken";
-import * as dotenv from "dotenv";
 import ErrorMessage from "src/errors/ErrorMessage";
-import UserService from "./UserService";
+import jwt from "jsonwebtoken";
+
+// Config
+import env from "src/config/env";
+
+// Interfaces
+import { IToken } from "src/interfaces/IToken";
+
+// Util
 import compareHashPassword from "src/util/compareHashPassword";
 
-// Carregar variáveis ​​de ambiente
-dotenv.config();
-
-// Recuperar variáveis ​​de ambiente
-const SECRET = process.env.SECRET as string;
-
-// Validar variáveis ​​de ambiente
-if (!SECRET) {
-  throw new ErrorMessage("Variável de ambiente 'SECRET' não foi configurada.", 500);
-}
+// Services
+import UserService from "./UserService";
 
 // Instância do serviço de usuários
 const service = new UserService();
 
 class AuthService {
-  /** Autentica um usuário com email e senha, retornando um token JWT em caso de sucesso */
+  /** 
+   * Autentica um usuário com email e senha, retornando um token JWT em caso de sucesso
+   * @param email - Email do usuário
+   * @param password - Senha do usuário
+   * @returns Token JWT
+   */
   async login(email: string, password: string): Promise<IToken> {
     // Valida existência de usuário com o email informado
     const user = await service.getByEmail(email);
@@ -39,7 +41,7 @@ class AuthService {
     if (!user.isActive) {
       throw new ErrorMessage("Usuário com acesso desativado", 401);
     }
-
+    
     // Gera token do usuário
     const payload = {
       id: user.id,
@@ -51,9 +53,15 @@ class AuthService {
     const jsonPayload = payload instanceof Model ? payload.toJSON() : payload;
 
     // Retorna token de acesso
-    return { token: this.generateToken(jsonPayload, SECRET) };
+    return { token: this.generateToken(jsonPayload, env.SECRET) };
   }
 
+  /**
+   * Gera um token JWT com base em um payload e um segredo
+   * @param payload - Dados a serem incluídos no token
+   * @param secret - Segredo para assinatura do token
+   * @returns Token JWT
+   */
   private generateToken(payload: any, secret: string): string {
     const plainPayload = payload instanceof Model ? payload.toJSON() : payload;
     return jwt.sign(plainPayload, secret, { expiresIn: "2h" });
