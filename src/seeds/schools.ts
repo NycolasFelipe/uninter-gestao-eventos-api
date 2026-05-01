@@ -1,6 +1,6 @@
 import SchoolRepository from "src/repositories/SchoolRepository";
 
-const schoolRepository = new SchoolRepository();
+const schoolRepository = SchoolRepository;
 
 async function seedSchools() {
   const schools = [

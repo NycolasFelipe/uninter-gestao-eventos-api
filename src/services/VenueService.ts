@@ -4,23 +4,25 @@ import Venue from "src/models/Venue";
 import VenueRepository from "src/repositories/VenueRepository";
 import VenuePictureService from "./VenuePictureService";
 
-// Instância do repositório de locais
-const repository = new VenueRepository();
-
 /** Serviço para operações relacionadas a locais */
 class VenueService {
+  constructor(
+    private readonly repository = VenueRepository,
+    private readonly venuePictureService = VenuePictureService
+  ) {}
+
   /** Obtém todos os locais cadastrados */
   async getAll(): Promise<Venue[]> {
-    return repository.getAll();
+    return this.repository.getAll();
   }
 
   async getAllBySchoolId(schoolId: number): Promise<Venue[]> {
-    return repository.getAllBySchoolId(schoolId);
+    return this.repository.getAllBySchoolId(schoolId);
   }
 
   /** Busca um local específico por ID */
   async getById(id: number): Promise<Venue> {
-    const venue = await repository.getById(id);
+    const venue = await this.repository.getById(id);
     if (!venue) {
       throw new ErrorMessage(`Local com id ${id} não encontrado.`, 404);
     }
@@ -32,7 +34,7 @@ class VenueService {
     if (data.capacity && data.capacity < 1) {
       throw new ErrorMessage("Capacidade não pode ser menor que 1.", 400);
     }
-    return repository.create(data);
+    return this.repository.create(data);
   }
 
   /** Exclui um local e suas fotos associadas */
@@ -41,19 +43,18 @@ class VenueService {
     await this.getById(id);
 
     // Remove fotos associadas
-    const venuePictureService = new VenuePictureService();
-    const venues = await venuePictureService.getAllByVenueId(id);
+    const venues = await this.venuePictureService.getAllByVenueId(id);
 
     for (const venue of venues) {
       try {
-        await venuePictureService.delete(venue.id);
+        await this.venuePictureService.delete(venue.id);
       } catch (error) {
         console.error(`Erro ao remover local ${venue.id}`, error);
       }
     }
 
     // Executa exclusão do local principal
-    const affectedRows = await repository.delete(id);
+    const affectedRows = await this.repository.delete(id);
     if (affectedRows === 0) {
       throw new ErrorMessage(`Local com id ${id} não encontrado.`, 404);
     }
@@ -65,8 +66,8 @@ class VenueService {
     await this.getById(id);
 
     // Executa atualização
-    await repository.update(id, data);
+    await this.repository.update(id, data);
   }
 }
 
-export default VenueService;
+export default new VenueService();

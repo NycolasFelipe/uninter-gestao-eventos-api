@@ -1,16 +1,18 @@
 import { Request, Response, NextFunction } from "express";
-import SubscriptionService from "src/services/SubscriptionService";
+
+// Util
 import extractTokenId from "src/util/extractTokenId";
 
-// Instância do serviço de inscrições
-const service = new SubscriptionService();
+// Services
+import SubscriptionService from "src/services/SubscriptionService";
 
-/** Controlador para operações relacionadas a inscrições em eventos */
 class SubscriptionController {
+  constructor(private readonly service = SubscriptionService) {}
+
   /** Obtém todas as inscrições */
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const subscriptions = await service.getAll();
+      const subscriptions = await this.service.getAll();
       res.status(200).send(subscriptions);
     } catch (error) {
       next(error);
@@ -21,7 +23,7 @@ class SubscriptionController {
   async getAllByUserId(req: Request, res: Response, next: NextFunction) {
     const id = extractTokenId(req);
     try {
-      const subscriptions = await service.getAllByUserId(Number(id));
+      const subscriptions = await this.service.getAllByUserId(Number(id));
       res.status(200).send(subscriptions);
     } catch (error) {
       next(error);
@@ -31,7 +33,7 @@ class SubscriptionController {
   /** Obtém todas as inscrições associadas a um evento */
   async getAllByEventId(req: Request, res: Response, next: NextFunction) {
     try {
-      const subscriptions = await service.getAllByEventId(Number(req.params.id));
+      const subscriptions = await this.service.getAllByEventId(Number(req.params.id));
       res.status(200).send(subscriptions);
     } catch (error) {
       next(error);
@@ -41,7 +43,7 @@ class SubscriptionController {
   /** Obtém uma inscrição específica por ID */
   async getById(req: Request, res: Response, next: NextFunction) {
     try {
-      const subscription = await service.getById(Number(req.params.id));
+      const subscription = await this.service.getById(Number(req.params.id));
       res.status(200).send(subscription);
     } catch (error) {
       next(error);
@@ -52,7 +54,7 @@ class SubscriptionController {
   async create(req: Request, res: Response, next: NextFunction) {
     const id = extractTokenId(req);
     try {
-      const subscription = await service.create({ ...req.body, userId: id });
+      const subscription = await this.service.create({ ...req.body, userId: id });
       res.status(201).send(subscription);
     } catch (error) {
       next(error);
@@ -65,7 +67,7 @@ class SubscriptionController {
     const userId = Number(id);
     const eventId = Number(req.params.id);
     try {
-      await service.cancel(eventId, userId);
+      await this.service.cancel(eventId, userId);
       res.status(201).send({ message: "Inscrição cancelada com sucesso." });
     } catch (error) {
       next(error);
@@ -73,4 +75,4 @@ class SubscriptionController {
   }
 }
 
-export default SubscriptionController;
+export default new SubscriptionController();

@@ -13,4 +13,4 @@ class AnnouncementRepository extends BaseRepository<Announcement> {
   }
 }
 
-export default AnnouncementRepository;
+export default new AnnouncementRepository();

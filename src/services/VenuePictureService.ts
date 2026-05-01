@@ -3,10 +3,9 @@ import { IVenuePictureCreate } from "src/interfaces/IVenuePicture";
 import VenuePicture from "src/models/VenuePicture";
 import VenuePictureRepository from "src/repositories/VenuePictureRepository";
 
-// Instância do repositório de locais
-const repository = new VenuePictureRepository();
-
 class VenuePictureService {
+  constructor(private readonly repository = VenuePictureRepository) {}
+
   /** Obtém todas as fotos de locais cadastradas */
   async getAll(query: { id?: string; venueId?: string }): Promise<VenuePicture[]> {
     if (query.id) {
@@ -16,17 +15,17 @@ class VenuePictureService {
     if (query.venueId) {
       return this.getAllByVenueId(Number(query.venueId));
     }
-    return repository.getAll();
+    return this.repository.getAll();
   }
 
   /** Busca fotos associadas a um local específico */
   async getAllByVenueId(id: number): Promise<VenuePicture[]> {
-    return repository.getAllByVenueId(id);
+    return this.repository.getAllByVenueId(id);
   }
 
   /** Busca uma foto específica por ID */
   async getById(id: number): Promise<VenuePicture> {
-    const venuePicture = await repository.getById(id);
+    const venuePicture = await this.repository.getById(id);
     if (!venuePicture) {
       throw new ErrorMessage(`Local com id ${id} não encontrado.`, 404);
     }
@@ -36,13 +35,13 @@ class VenuePictureService {
   /** Cria uma nova foto de local */
   async create(data: IVenuePictureCreate[]): Promise<void> {
     for (const item of data) {
-      await repository.create(item);
+      await this.repository.create(item);
     }
   }
 
   /** Exclui uma foto de local */
   async delete(id: number): Promise<void> {
-    const affectedRows = await repository.delete(id);
+    const affectedRows = await this.repository.delete(id);
     if (affectedRows === 0) {
       throw new ErrorMessage(`Local com id ${id} não encontrado.`, 404);
     }
@@ -54,8 +53,8 @@ class VenuePictureService {
     await this.getById(id);
 
     // Executa atualização
-    await repository.update(id, data);
+    await this.repository.update(id, data);
   }
 }
 
-export default VenuePictureService;
+export default new VenuePictureService();

@@ -1,6 +1,6 @@
 import PermissionRepository from "src/repositories/PermissionRepository";
 
-const permissionRepository = new PermissionRepository();
+const permissionRepository = PermissionRepository;
 
 async function seedPermissions() {
   const permissions = [

@@ -24,4 +24,4 @@ class RolePermissionRepository extends BaseRepository<RolePermission> {
   }
 }
 
-export default RolePermissionRepository;
+export default new RolePermissionRepository();

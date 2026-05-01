@@ -1,6 +1,6 @@
 import VenueRepository from "src/repositories/VenueRepository";
 
-const venueRepository = new VenueRepository();
+const venueRepository = VenueRepository;
 
 async function seedVenues() {
   const venues = [

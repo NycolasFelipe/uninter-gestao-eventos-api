@@ -1,13 +1,15 @@
 import { NextFunction, Request, Response } from "express";
+
+// Services
 import AuthService from "src/services/AuthService";
 
-// Instância do serviço de autenticação
-const service = new AuthService();
-
 class AuthController {
+  constructor(private readonly service = AuthService) {}
+
+  /** Realiza o login de um usuário */
   async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const token = await service.login(req.body.email, req.body.password);
+      const token = await this.service.login(req.body.email, req.body.password);
       res.status(200).send(token);
     } catch (error) {
       next(error);
@@ -15,4 +17,4 @@ class AuthController {
   }
 }
 
-export default AuthController;
+export default new AuthController();

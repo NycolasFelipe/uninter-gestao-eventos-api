@@ -92,4 +92,4 @@ class UserRepository extends BaseRepository<User> {
   }
 }
 
-export default UserRepository;
+export default new UserRepository();

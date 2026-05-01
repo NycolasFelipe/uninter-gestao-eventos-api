@@ -12,25 +12,29 @@ import EventService from "./EventService";
 import UserService from "./UserService";
 import VenueService from "./VenueService";
 
-// Instância do repositório de escolas
-const repository = new SchoolRepository();
-
 /** Serviço para operações relacionadas a escolas */
 class SchoolService {
+  constructor(
+    private readonly repository = SchoolRepository,
+    private readonly announcementService = AnnouncementService,
+    private readonly eventService = EventService,
+    private readonly userService = UserService,
+    private readonly venueService = VenueService
+  ) {}
+
   /** Obtém todas as escolas cadastradas */
   async getAll(): Promise<School[]> {
-    return repository.getAll();
+    return this.repository.getAll();
   }
 
   /** Obtém todos os usuários associados a uma escola */
   async getAllUsersById(id: number): Promise<User[]> {
-    const userService = new UserService();
-    return await userService.getAllBySchoolId(id);
+    return this.userService.getAllBySchoolId(id);
   }
 
   /** Busca uma escola por ID */
   async getById(id: number): Promise<School> {
-    const school = await repository.getById(id);
+    const school = await this.repository.getById(id);
     if (!school) {
       throw new ErrorMessage(`Escola com id ${id} não encontrada.`, 404);
     }
@@ -39,7 +43,7 @@ class SchoolService {
 
   /** Cria uma nova escola */
   async create(data: ISchoolCreate): Promise<School> {
-    return repository.create(data);
+    return this.repository.create(data);
   }
 
   /** Exclui uma escola existente com tratamento de dependências */
@@ -48,34 +52,30 @@ class SchoolService {
     await this.getById(id);
 
     // Remove associação da escola em todos os usuários vinculados
-    const userService = new UserService();
-    const users = await userService.getAllBySchoolId(id);
+    const users = await this.userService.getAllBySchoolId(id);
 
     for (const user of users) {
       try {
-        await userService.update(user.id, { schoolId: null });
+        await this.userService.update(user.id, { schoolId: null });
       } catch (error) {
         console.error(`Erro ao atualizar usuário ${user.id}.`, error);
       }
     }
 
     // Remove associação da escola em todos eventos vinculados
-    const eventService = new EventService();
-    const events = await eventService.getAllBySchoolId(id);
-    await this.deleteAssociatedItems(eventService, events, "evento", "escola", id);
+    const events = await this.eventService.getAllBySchoolId(id);
+    await this.deleteAssociatedItems(this.eventService, events, "evento", "escola", id);
 
     // Remove associação da escola em todos os locais vinculados
-    const venueService = new VenueService();
-    const venues = await venueService.getAllBySchoolId(id);
-    await this.deleteAssociatedItems(venueService, venues, "local", "escola", id);
+    const venues = await this.venueService.getAllBySchoolId(id);
+    await this.deleteAssociatedItems(this.venueService, venues, "local", "escola", id);
 
     // Remove associaçãod a escola em todos os anúncios vinculados
-    const announcementService = new AnnouncementService();
-    const announcements = await announcementService.getAllBySchoolId(id);
-    await this.deleteAssociatedItems(announcementService, announcements, "anúncio", "escola", id);
+    const announcements = await this.announcementService.getAllBySchoolId(id);
+    await this.deleteAssociatedItems(this.announcementService, announcements, "anúncio", "escola", id);
 
     // Executa exclusão após remover dependências
-    await repository.delete(id);
+    await this.repository.delete(id);
   }
 
   /** Função auxiliar para remover itens associados */
@@ -101,11 +101,11 @@ class SchoolService {
     await this.getById(id);
 
     // Executa atualização
-    const affectedRows = await repository.update(id, data);
+    const affectedRows = await this.repository.update(id, data);
     if (affectedRows === 0) {
       throw new ErrorMessage(`Nenhum dado foi alterado para a escola ${id}.`, 409);
     }
   }
 }
 
-export default SchoolService;
+export default new SchoolService();

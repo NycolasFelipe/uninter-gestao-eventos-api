@@ -1,6 +1,6 @@
 import SubscriptionRepository from "src/repositories/SubscriptionRepository";
 
-const subscriptionRepository = new SubscriptionRepository();
+const subscriptionRepository = SubscriptionRepository;
 
 async function seedSubscriptions() {
   // Obter todos os alunos (roleId = 2) - IDs de 1 a 30

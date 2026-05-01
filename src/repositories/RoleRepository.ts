@@ -10,6 +10,7 @@ class RoleRepository extends BaseRepository<Role> {
     super(Role);
   }
 
+  /** Obtém todos os papéis */
   getAll(): Promise<Role[]> {
     return this.model.findAll({
       include: [{
@@ -19,6 +20,8 @@ class RoleRepository extends BaseRepository<Role> {
       }]
     });
   }
+
+  /** Obtém todos os papéis com os usuários associados */
   getAllWithUsers(): Promise<Role[]> {
     return this.model.findAll({
       include: [
@@ -35,6 +38,7 @@ class RoleRepository extends BaseRepository<Role> {
     });
   }
 
+  /** Obtém um papel específico por ID */
   getById(id: number | bigint): Promise<Role | null> {
     return this.model.findOne({
       where: { id },
@@ -47,4 +51,4 @@ class RoleRepository extends BaseRepository<Role> {
   }
 }
 
-export default RoleRepository;
+export default new RoleRepository();

@@ -5,19 +5,18 @@ import User from "src/models/User";
 import UserRepository from "src/repositories/UserRepository";
 import hashPassword from "src/util/hashPassword";
 
-// Instância do repositório de usuários
-const repository = new UserRepository();
-
 /** Serviço para operações relacionadas a usuários */
 class UserService {
+  constructor(private readonly repository = UserRepository) {}
+
   /** Obtém todos os usuários */
   async getAll(): Promise<User[]> {
-    return repository.getAll();
+    return this.repository.getAll();
   }
 
   /** Busca um usuário por ID */
   async getById(id: bigint): Promise<User> {
-    const user = await repository.getById(id);
+    const user = await this.repository.getById(id);
     if (!user) {
       throw new ErrorMessage(`Usuário com id ${id} não encontrado.`, 404);
     }
@@ -26,17 +25,17 @@ class UserService {
 
   /** Busca um usuário por email */
   async getByEmail(email: string): Promise<User |null> {
-    return await repository.getByEmail(email);
+    return this.repository.getByEmail(email);
   }
 
   /** Obtém todos os usuários de uma escola específica */
   async getAllBySchoolId(id: number): Promise<User[]> {
-    return await repository.getAllBySchoolId(id);
+    return this.repository.getAllBySchoolId(id);
   }
 
   /** Obtém detalhes completos de um usuário (com relacionamentos) */
   async getDetailById(id: bigint): Promise<User> {
-    const user = await repository.getDetailById(id);
+    const user = await this.repository.getDetailById(id);
     if (!user) {
       throw new ErrorMessage(`Usuário com id ${id} não encontrado.`, 404);
     }
@@ -56,12 +55,12 @@ class UserService {
       ...user,
       passwordHash: hashPassword(user.password)
     }
-    return repository.create(userWithHashPassword);
+    return this.repository.create(userWithHashPassword);
   }
 
   /** Exclui um usuário */
   async delete(id: bigint): Promise<void> {
-    const affectedRows = await repository.delete(id);
+    const affectedRows = await this.repository.delete(id);
     if (affectedRows === 0) {
       throw new ErrorMessage(`Usuário com id ${id} não encontrado.`, 404);
     }
@@ -73,11 +72,11 @@ class UserService {
     await this.getById(id);
 
     // Executa atualização
-    const affectedRows = await repository.update(id, data);
+    const affectedRows = await this.repository.update(id, data);
     if (affectedRows === 0) {
       throw new ErrorMessage(`Nenhum dado foi alterado para o usuário ${id}.`, 409);
     }
   }
 }
 
-export default UserService;
+export default new UserService();

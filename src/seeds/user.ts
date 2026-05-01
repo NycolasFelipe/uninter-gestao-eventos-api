@@ -1,6 +1,6 @@
 import UserRepository from "src/repositories/UserRepository";
 
-const userRepository = new UserRepository();
+const userRepository = UserRepository;
 
 // Configurações compartilhadas
 const COMMON_PROPS = {

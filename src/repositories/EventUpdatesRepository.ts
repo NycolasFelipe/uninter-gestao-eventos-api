@@ -8,9 +8,10 @@ class EventUpdatesRepository extends BaseRepository<EventUpdates> {
     super(EventUpdates);
   }
 
+  /** Obtém todos os updates de um evento específico */
   getAllByEventId(id: number): Promise<EventUpdates[]> {
     return this.model.findAll({ where: { eventId: id } });
   }
 }
 
-export default EventUpdatesRepository;
+export default new EventUpdatesRepository();

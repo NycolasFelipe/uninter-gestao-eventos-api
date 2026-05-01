@@ -9,4 +9,4 @@ class SchoolRepository extends BaseRepository<School> {
   }
 }
 
-export default SchoolRepository;
+export default new SchoolRepository();

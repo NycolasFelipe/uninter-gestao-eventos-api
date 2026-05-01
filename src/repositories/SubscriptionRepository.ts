@@ -1,4 +1,4 @@
-import { FindOptions } from "sequelize";
+import { Attributes, FindOptions } from "sequelize";
 import BaseRepository from "./BaseRepository";
 
 // Models
@@ -9,6 +9,11 @@ import EventType from "src/models/EventType";
 import Venue from "src/models/Venue";
 
 class SubscriptionRepository extends BaseRepository<Subscription> {
+  constructor() {
+    super(Subscription);
+  }
+
+  /** Obtém as opções padrão para consultas */
   private getDefaultOptions(): FindOptions {
     return {
       include: [{
@@ -31,13 +36,8 @@ class SubscriptionRepository extends BaseRepository<Subscription> {
     }
   }
 
-  constructor() {
-    super(Subscription);
-  }
-
   /** Obtém todas as inscrições associadas a um usuário */
   async getAllByUserId(userId: number): Promise<Subscription[]> {
-    console.log("async getAllByUserId(userId: number): Promise<Subscription[]> {");
     return this.model.findAll({
       ...this.getDefaultOptions(),
       where: { userId },
@@ -46,6 +46,19 @@ class SubscriptionRepository extends BaseRepository<Subscription> {
       }
     });
   }
+
+  async delete(options?: FindOptions<Attributes<Subscription>> | undefined): Promise<number>;
+  async delete(id: number | bigint): Promise<number>;
+  async delete(eventId: number, userId: number): Promise<number>;
+  async delete(identifier?: number | bigint | FindOptions<Attributes<Subscription>>, userId?: number): Promise<number> {
+    if (userId !== undefined && typeof identifier === "number") {
+      return this.model.destroy({ where: { eventId: identifier, userId } });
+    }
+    if (typeof identifier === "number" || typeof identifier === "bigint") {
+      return super.delete(identifier);
+    }
+    return super.delete(identifier);
+  }
 }
 
-export default SubscriptionRepository;
+export default new SubscriptionRepository();

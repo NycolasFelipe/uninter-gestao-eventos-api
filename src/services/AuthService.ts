@@ -14,10 +14,9 @@ import compareHashPassword from "src/util/compareHashPassword";
 // Services
 import UserService from "./UserService";
 
-// Instância do serviço de usuários
-const service = new UserService();
-
 class AuthService {
+  constructor(private readonly userService = UserService) {}
+
   /** 
    * Autentica um usuário com email e senha, retornando um token JWT em caso de sucesso
    * @param email - Email do usuário
@@ -26,7 +25,7 @@ class AuthService {
    */
   async login(email: string, password: string): Promise<IToken> {
     // Valida existência de usuário com o email informado
-    const user = await service.getByEmail(email);
+    const user = await this.userService.getByEmail(email);
     if (!user) {
       throw new ErrorMessage("Credenciais inválidas", 401);
     }
@@ -68,4 +67,4 @@ class AuthService {
   }
 }
 
-export default AuthService;
+export default new AuthService();

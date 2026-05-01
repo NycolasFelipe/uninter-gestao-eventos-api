@@ -1,7 +1,11 @@
-import { CreateOptions } from "sequelize";
 import BaseRepository from "./BaseRepository";
-import VenuePicture from "src/models/VenuePicture";
+
+// Sequelize
+import { CreateOptions } from "sequelize";
 import { MakeNullishOptional } from "sequelize/types/utils";
+
+// Models
+import VenuePicture from "src/models/VenuePicture";
 
 class VenuePictureRepository extends BaseRepository<VenuePicture> {
   constructor() {
@@ -14,9 +18,12 @@ class VenuePictureRepository extends BaseRepository<VenuePicture> {
   }
 
   /** Cria múltiplas imagens de local em lote */
-  async bulkCreate(records: MakeNullishOptional<VenuePicture['_creationAttributes']>[], options?: CreateOptions<VenuePicture['_attributes']>): Promise<VenuePicture[]> {
+  async bulkCreate(
+    records: MakeNullishOptional<VenuePicture['_creationAttributes']>[],
+    options?: CreateOptions<VenuePicture['_attributes']>
+  ): Promise<VenuePicture[]> {
     return this.model.bulkCreate(records, options);
   }
 }
 
-export default VenuePictureRepository;
+export default new VenuePictureRepository();

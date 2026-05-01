@@ -1,9 +1,16 @@
 import { Request, Response, NextFunction } from "express";
 import ErrorMessage from "src/errors/ErrorMessage";
+
+// Services
 import UserService from "src/services/UserService";
 
-const userService = new UserService();
-
+/**
+ * Middleware para verificar acesso a recursos com base em permissões do usuário
+ * 
+ * @param req - Objeto da requisição
+ * @param res - Objeto da resposta
+ * @param next - Função para passar para o próximo middleware
+ */
 const resourceAccessMiddleware = async (
   req: Request,
   res: Response,
@@ -34,7 +41,7 @@ const resourceAccessMiddleware = async (
   const userId = req.payload.id;
 
   // Obtém todas as permissões do usuário
-  const userPermissions = await userService.getAllPermissions(userId);
+  const userPermissions = await UserService.getAllPermissions(userId);
   const permissionNames = userPermissions.map(p => p.permissionName);
 
   // Verifica se o usuário possui a permissão necessária

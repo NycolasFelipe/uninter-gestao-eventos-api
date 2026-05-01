@@ -3,24 +3,23 @@ import { IAnnouncementCreate } from "src/interfaces/IAnnouncement";
 import Announcement from "src/models/Announcement";
 import AnnouncementRepository from "src/repositories/AnnouncementRepository";
 
-// Instância do repositório de anúncios
-const repository = new AnnouncementRepository();
-
 /** Serviço para operações relacionadas a anúncios */
 class AnnouncementService {
+  constructor(private readonly repository = AnnouncementRepository) {}
+
   /** Obtém todos os anúncios existentes */
   async getAll(): Promise<Announcement[]> {
-    return repository.getAll();
+    return this.repository.getAll();
   }
 
   /** Busca todos os anúncios de uma escola por ID */
   async getAllBySchoolId(id: number): Promise<Announcement[]> {
-    return repository.getAllBySchoolId(id);
+    return this.repository.getAllBySchoolId(id);
   }
 
   /** Busca um anúncio por ID */
   async getById(id: number): Promise<Announcement> {
-    const announcement = await repository.getById(id);
+    const announcement = await this.repository.getById(id);
     if (!announcement) {
       throw new ErrorMessage(`Anúncio com id ${id} não encontrado.`, 404);
     }
@@ -29,7 +28,7 @@ class AnnouncementService {
 
   /** Cria um novo anúncio */
   async create(data: IAnnouncementCreate): Promise<Announcement> {
-    return repository.create(data);
+    return this.repository.create(data);
   }
 
   /** Exclui um anúncio existente com tratamento de dependências */
@@ -38,7 +37,7 @@ class AnnouncementService {
     await this.getById(id);
 
     // Executa exclusão
-    await repository.delete(id);
+    await this.repository.delete(id);
   }
 
   /** Atualiza dados de um anúncio */
@@ -47,11 +46,11 @@ class AnnouncementService {
     await this.getById(id);
 
     // Executa atualização
-    const affectedRows = await repository.update(id, data);
+    const affectedRows = await this.repository.update(id, data);
     if (affectedRows === 0) {
       throw new ErrorMessage(`Nenhum dado foi alterado para o anúncio ${id}.`, 409);
     }
   }
 }
 
-export default AnnouncementService;
+export default new AnnouncementService();

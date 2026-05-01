@@ -9,4 +9,4 @@ class EventTypeRepository extends BaseRepository<EventType> {
   }
 }
 
-export default EventTypeRepository;
+export default new EventTypeRepository();

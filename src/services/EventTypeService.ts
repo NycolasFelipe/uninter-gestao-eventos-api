@@ -4,19 +4,21 @@ import EventType from "src/models/EventType";
 import EventTypeRepository from "src/repositories/EventTypeRepository";
 import EventService from "./EventService";
 
-// Instância do repositório de tipos de eventos
-const repository = new EventTypeRepository();
-
 /** Serviço para operações relacionadas a tipos de eventos */
 class EventTypeService {
+  constructor(
+    private readonly repository = EventTypeRepository,
+    private readonly eventService = EventService
+  ) {}
+
   /** Obtém todas os tipos de eventos existentes */
   async getAll(): Promise<EventType[]> {
-    return repository.getAll();
+    return this.repository.getAll();
   }
 
   /** Busca um tipo de evento por ID */
   async getById(id: number): Promise<EventType> {
-    const eventType = await repository.getById(id);
+    const eventType = await this.repository.getById(id);
     if (!eventType) {
       throw new ErrorMessage(`Tipo de evento com id ${id} não encontrado.`, 404);
     }
@@ -25,7 +27,7 @@ class EventTypeService {
 
   /** Cria um novo tipo de evento */
   async create(data: IEventTypeCreate): Promise<EventType> {
-    return repository.create(data);
+    return this.repository.create(data);
   }
 
   /** Exclui um tipo de evento existente com tratamento de dependências */
@@ -34,8 +36,7 @@ class EventTypeService {
     await this.getById(id);
 
     // Verifica vinculação existente com evento
-    const eventService = new EventService();
-    const existingEventWithEventType = await eventService.getAllByEventTypeId([id]);
+    const existingEventWithEventType = await this.eventService.getAllByEventTypeId([id]);
 
     if (existingEventWithEventType.length > 0) {
       const events = existingEventWithEventType.map(event => event.id)?.join(", ");
@@ -43,7 +44,7 @@ class EventTypeService {
     }
 
     // Executa exclusão
-    await repository.delete(id);
+    await this.repository.delete(id);
   }
 
   /** Atualiza dados de um tipo de evento */
@@ -52,11 +53,11 @@ class EventTypeService {
     await this.getById(id);
 
     // Executa atualização
-    const affectedRows = await repository.update(id, data);
+    const affectedRows = await this.repository.update(id, data);
     if (affectedRows === 0) {
       throw new ErrorMessage(`Nenhum dado foi alterado para o tipo de evento ${id}.`, 409);
     }
   }
 }
 
-export default EventTypeService;
+export default new EventTypeService();
