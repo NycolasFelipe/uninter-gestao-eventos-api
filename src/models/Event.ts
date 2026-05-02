@@ -19,6 +19,42 @@ import EventUpdates from "./EventUpdates";
 // Enums
 import { EventStatus } from "src/enums/EventStatusEnum";
 
+// Interfaces
+import { IBaseParams } from "src/interfaces/IBaseParams";
+
+export interface IEventParams extends IBaseParams {
+  eventId?: number;
+  schoolId?: number;
+  eventTypeId?: number;
+  eventTypeIds?: string;
+  organizerUserId?: number | bigint;
+  venueId?: number;
+  name?: string;
+  targetAudience?: string;
+  status?: string;
+  isPublic?: boolean;
+  startDate?: Date;
+  endDate?: Date;
+}
+
+export interface EventAttributes {
+  id: number;
+  schoolId: number;
+  eventTypeId: number;
+  organizerUserId: number | bigint;
+  venueId: number;
+  name: string;
+  description: string | null;
+  objective: string | null;
+  targetAudience: string | null;
+  status: EventStatus;
+  isPublic: boolean;
+  startDate: Date;
+  endDate: Date;
+}
+
+export interface EventCreationAttributes extends Omit<EventAttributes, "id"> { }
+
 @Table({
   tableName: 'event',
   timestamps: false,
@@ -37,7 +73,7 @@ import { EventStatus } from "src/enums/EventStatusEnum";
     }
   ]
 })
-class Event extends Model {
+class Event extends Model<EventAttributes, EventCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     primaryKey: true,
@@ -68,7 +104,7 @@ class Event extends Model {
     allowNull: false,
     field: 'organizerUserId'
   })
-  organizerUserId!: bigint;
+  organizerUserId!: number | bigint;
 
   @ForeignKey(() => Venue)
   @Column({

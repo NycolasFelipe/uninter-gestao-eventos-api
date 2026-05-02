@@ -7,11 +7,22 @@ import Event from "./Event";
 // Enums
 import { EventStatus } from "src/enums/EventStatusEnum";
 
+// Interfaces
+export interface EventUpdatesAttributes {
+  id: number;
+  userId: number | bigint;
+  eventId: number;
+  status: EventStatus;
+  updateDate: Date;
+}
+
+export interface EventUpdatesCreationAttributes extends Omit<EventUpdatesAttributes, 'id' | 'updateDate'> { }
+
 @Table({
   tableName: 'event_updates',
   timestamps: false,
 })
-class EventUpdates extends Model {
+class EventUpdates extends Model<EventUpdatesAttributes, EventUpdatesCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     primaryKey: true,
@@ -26,7 +37,7 @@ class EventUpdates extends Model {
     allowNull: false,
     field: 'userId'
   })
-  userId!: number;
+  userId!: number | bigint;
 
   @ForeignKey(() => Event)
   @Column({

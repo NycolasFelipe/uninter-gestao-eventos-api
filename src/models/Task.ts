@@ -11,7 +11,7 @@ import {
 import Event from "./Event";
 import User from "./User";
 
-// Definindo Enums
+// Enums
 export enum TaskStatus {
   ToDo = "ToDo",
   InProgress = "InProgress",
@@ -25,6 +25,25 @@ export enum TaskPriority {
   Medium = "Medium",
   High = "High",
 }
+
+// Interfaces
+export interface TaskAttributes {
+  id: bigint;
+  eventId: number;
+  assignedToUserId: bigint;
+  createdByUserId: bigint;
+  title: string;
+  description: string | null;
+  status: TaskStatus;
+  priority: TaskPriority;
+  dueDate: Date | null;
+  plannedStartDate: Date | null;
+  actualStartDate: Date | null;
+  plannedEndDate: Date | null;
+  actualEndDate: Date | null;
+}
+
+export interface TaskCreationAttributes extends Omit<TaskAttributes, "id"> { }
 
 @Table({
   tableName: 'task',
@@ -44,7 +63,7 @@ export enum TaskPriority {
     }
   ]
 })
-class Task extends Model {
+class Task extends Model<TaskAttributes, TaskCreationAttributes> {
   @Column({
     type: DataType.BIGINT,
     primaryKey: true,

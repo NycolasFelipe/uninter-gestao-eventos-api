@@ -11,6 +11,41 @@ import {
 import School from "./School";
 import Role from "./Role";
 
+// Interfaces
+import type { PermissionAttributes } from "./Permission";
+import type { RoleAttributes } from "./Role";
+import type { SchoolAttributes } from "./School";
+
+export interface UserAttributes {
+  id: number | bigint;
+  firstName: string;
+  lastName: string;
+  email: string;
+  passwordHash: string;
+  phoneNumber: string | null;
+  profilePictureUrl: string | null;
+  isActive: boolean;
+  schoolId: number | null;
+  roleId: number | null;
+}
+
+export interface UserCreationAttributes {
+  firstName: string;
+  lastName: string;
+  email: string;
+  passwordHash: string;
+  phoneNumber?: string | null;
+  profilePictureUrl?: string | null;
+  isActive?: boolean;
+  schoolId?: number | null;
+  roleId?: number | null;
+}
+
+export interface UserDetailAttributes extends Omit<UserAttributes, "passwordHash" | "schoolId" | "roleId"> {
+  role: RoleAttributes & { permissions: PermissionAttributes[] };
+  school: SchoolAttributes;
+}
+
 @Table({
   tableName: 'user',
   timestamps: false,
@@ -26,14 +61,14 @@ import Role from "./Role";
     }
   ]
 })
-class User extends Model {
+class User extends Model<UserAttributes, UserCreationAttributes> {
   @Column({
     type: DataType.BIGINT,
     primaryKey: true,
     autoIncrement: true,
     field: 'id'
   })
-  id!: bigint;
+  id!: number | bigint;
 
   @Column({
     type: DataType.STRING(100),

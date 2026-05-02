@@ -47,6 +47,7 @@ class SubscriptionRepository extends BaseRepository<Subscription> {
     });
   }
 
+  /** Exclui uma inscrição */
   async delete(options?: FindOptions<Attributes<Subscription>> | undefined): Promise<number>;
   async delete(id: number | bigint): Promise<number>;
   async delete(eventId: number, userId: number): Promise<number>;

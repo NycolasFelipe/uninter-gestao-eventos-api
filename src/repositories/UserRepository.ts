@@ -65,7 +65,7 @@ class UserRepository extends BaseRepository<User> {
   }
 
   /** Obtém todos os usuários de uma escola específica */
-  async getAllBySchoolId(id: number | bigint): Promise<User[]> {
+  async getAllBySchoolId(id: number): Promise<User[]> {
     return this.model.findAll({
       where: { schoolId: id },
       attributes: {

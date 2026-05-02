@@ -1,7 +1,12 @@
 import ErrorMessage from "src/errors/ErrorMessage";
-import { IVenueCreate } from "src/interfaces/IVenue";
-import Venue from "src/models/Venue";
+
+// Interfaces
+import { VenueAttributes, VenueCreationAttributes } from "src/models/Venue";
+
+// Repositories
 import VenueRepository from "src/repositories/VenueRepository";
+
+// Services
 import VenuePictureService from "./VenuePictureService";
 
 /** Serviço para operações relacionadas a locais */
@@ -9,19 +14,20 @@ class VenueService {
   constructor(
     private readonly repository = VenueRepository,
     private readonly venuePictureService = VenuePictureService
-  ) {}
+  ) { }
 
   /** Obtém todos os locais cadastrados */
-  async getAll(): Promise<Venue[]> {
+  async getAll(): Promise<VenueAttributes[]> {
     return this.repository.getAll();
   }
 
-  async getAllBySchoolId(schoolId: number): Promise<Venue[]> {
+  /** Obtém todos os locais de uma determinada escola */
+  async getAllBySchoolId(schoolId: number): Promise<VenueAttributes[]> {
     return this.repository.getAllBySchoolId(schoolId);
   }
 
   /** Busca um local específico por ID */
-  async getById(id: number): Promise<Venue> {
+  async getById(id: number): Promise<VenueAttributes> {
     const venue = await this.repository.getById(id);
     if (!venue) {
       throw new ErrorMessage(`Local com id ${id} não encontrado.`, 404);
@@ -30,7 +36,7 @@ class VenueService {
   }
 
   /** Cria um novo local */
-  async create(data: IVenueCreate): Promise<Venue> {
+  async create(data: VenueCreationAttributes): Promise<VenueAttributes> {
     if (data.capacity && data.capacity < 1) {
       throw new ErrorMessage("Capacidade não pode ser menor que 1.", 400);
     }
@@ -61,7 +67,7 @@ class VenueService {
   }
 
   /** Atualiza dados de um local */
-  async update(id: number, data: Partial<Venue>): Promise<void> {
+  async update(id: number, data: Partial<Omit<VenueCreationAttributes, "schoolId">>): Promise<void> {
     // Verifica existência prévia
     await this.getById(id);
 

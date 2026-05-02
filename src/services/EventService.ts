@@ -1,11 +1,14 @@
 import ErrorMessage from "src/errors/ErrorMessage";
 
-// Interfaces
-import { IEventCreate, IEventParams } from "src/interfaces/IEvent";
-import { IEventUpdateCreate } from "src/interfaces/IEventUpdates";
+// Context
+import { requestContext } from "src/context/requestContext";
 
-// Models
-import Event from "src/models/Event";
+// Interfaces
+import { EventUpdatesCreationAttributes } from "src/models/EventUpdates";
+import { EventAttributes, EventCreationAttributes, IEventParams } from "src/models/Event";
+
+// Enums
+import { RoleEnum } from "src/enums/RoleEnum";
 
 // Repositories
 import EventRepository from "src/repositories/EventRepository";
@@ -13,34 +16,32 @@ import EventUpdatesRepository from "src/repositories/EventUpdatesRepository";
 
 // Services
 import TaskService from "./TaskService";
-
-// Util
-import processQueryParams from "src/util/processQueryParams";
-
+import UserService from "./UserService";
 
 /** Serviço para operações relacionadas a eventos */
 class EventService {
   constructor(
     private readonly eventRepository = EventRepository,
     private readonly eventUpdatesRepository = EventUpdatesRepository,
-    private readonly taskService = TaskService
-  ) {}
+    private readonly taskService = TaskService,
+    private readonly userService = UserService
+  ) { }
 
   /** Obtém todos os eventos */
-  async getAll(params: IEventParams): Promise<Event[]> {
-    const processedParams = await processQueryParams(params);
+  async getAll(params: IEventParams): Promise<EventAttributes[]> {
+    const processedParams = await this.processQueryParams(params);
     return this.eventRepository.getAll(processedParams);
   }
 
   /** Obtém todos os eventos com detalhes */
-  async getAllDetailed(params: IEventParams): Promise<Event[]> {
-    const processedParams = await processQueryParams(params);
+  async getAllDetailed(params: IEventParams): Promise<EventAttributes[]> {
+    const processedParams = await this.processQueryParams(params);
     return this.eventRepository.getAllDetailed(processedParams);
   }
 
   /** Busca um evento por ID */
-  async getById(params: IEventParams): Promise<Event> {
-    const processedParams = await processQueryParams(params);
+  async getById(params: IEventParams): Promise<EventAttributes> {
+    const processedParams = await this.processQueryParams(params);
     const event = await this.eventRepository.getWithId(processedParams);
     if (!event) {
       throw new ErrorMessage("Evento não encontrado.", 404);
@@ -49,28 +50,32 @@ class EventService {
   }
 
   /** Obtém eventos por tipo */
-  async getAllByEventTypeId(eventTypeIds: number[]): Promise<Event[]> {
+  async getAllByEventTypeId(eventTypeIds: number[]): Promise<EventAttributes[]> {
     return this.getAll({ eventTypeIds: eventTypeIds.join(",") });
   }
 
   /** Obtém eventos por escola */
-  async getAllBySchoolId(schoolId: number): Promise<Event[]> {
+  async getAllBySchoolId(schoolId: number): Promise<EventAttributes[]> {
     return this.getAll({ schoolId });
   }
 
   /** Cria um novo evento */
-  async create(data: IEventCreate): Promise<Event> {
-    const userId = await processQueryParams();
+  async create(data: Omit<EventCreationAttributes, "organizerUserId">): Promise<EventAttributes> {
+    const userId = await this.processQueryParams();
     const organizerUserId = userId.userId || userId.adminId;
+    if (!organizerUserId) {
+      throw new ErrorMessage("Usuário organizador não identificado.", 401);
+    }
     const event = await this.eventRepository.create({ ...data, organizerUserId });
 
     // Registra criação do evento
-    const eventUpdatesCreate: IEventUpdateCreate = {
+    const eventUpdatesCreate: EventUpdatesCreationAttributes = {
       eventId: event.id,
       status: event.status,
       userId: event.organizerUserId,
     }
     await this.eventUpdatesRepository.create(eventUpdatesCreate);
+
     return event;
   }
 
@@ -91,12 +96,12 @@ class EventService {
     }
 
     // Obtém id do usuário que solicitou a exclusão
-    const userId = await processQueryParams();
+    const userId = await this.processQueryParams();
 
     // Executa exclusão após remover dependências
     const affectedRows = await this.eventRepository.deleteById({
       eventId: id,
-      organizerUserId: userId.userId
+      organizerUserId: userId.userId || userId.adminId
     });
 
     if (affectedRows === 0) {
@@ -105,7 +110,7 @@ class EventService {
   }
 
   /** Atualiza dados de um evento */
-  async update(id: number, data: Partial<Event>): Promise<void> {
+  async update(id: number, data: Partial<EventCreationAttributes>): Promise<void> {
     // Verifica existência prévia
     const event = await this.getById({ eventId: id });
 
@@ -117,13 +122,37 @@ class EventService {
 
     // Registra atualização do evento
     if (data.status) {
-      const eventUpdatesCreate: IEventUpdateCreate = {
+      const eventUpdatesCreate: EventUpdatesCreationAttributes = {
         eventId: event.id,
         status: event.status,
-        userId: event.organizer.id,
+        userId: event.organizerUserId,
       }
       await this.eventUpdatesRepository.create(eventUpdatesCreate);
     }
+  }
+
+  /**
+   * Processa parâmetros de consulta com base no papel do usuário.
+   * Para não-administradores, aplica filtros obrigatórios de usuário e escola.
+   */
+  private async processQueryParams<T extends IEventParams>(params?: T): Promise<T> {
+    const context = requestContext.get();
+    const userId = context?.payload.id;
+    const user = await this.userService.getDetailById(userId);
+    const isAdmin = user.role.roleName === RoleEnum.ADMINISTRATOR;
+
+    if (!isAdmin) {
+      return {
+        ...params,
+        userId: Number(user.id),
+        schoolId: Number(user.school.id)
+      } as unknown as T;
+    }
+
+    return {
+      ...params,
+      adminId: Number(user.id)
+    } as unknown as T;
   }
 }
 

@@ -22,8 +22,8 @@ abstract class BaseRepository<T extends Model> {
   }
 
   /** Busca ou atualiza um registro */
-  async findOrCreate(data: Omit<MakeNullishOptional<T['_creationAttributes']>, 'id'>): Promise<[T, boolean]> {
-    return this.model.findOrCreate(data as MakeNullishOptional<T['_creationAttributes']>);
+  async findOrCreate(options: any): Promise<[T, boolean]> {
+    return this.model.findOrCreate(options);
   }
 
   /** Atualiza registros por ID */

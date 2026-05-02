@@ -1,6 +1,17 @@
 import { BelongsTo, Column, DataType, ForeignKey, Model, Table } from "sequelize-typescript";
+
+// Models
 import Event from "./Event";
 import User from "./User";
+
+// Interfaces
+export interface SubscriptionAttributes {
+  id: number;
+  eventId: number;
+  userId: number;
+}
+
+export interface SubscriptionCreationAttributes extends Omit<SubscriptionAttributes, "id"> { }
 
 @Table({
   tableName: 'subscription',
@@ -15,7 +26,7 @@ import User from "./User";
     }
   ]
 })
-class Subscription extends Model {
+class Subscription extends Model<SubscriptionAttributes, SubscriptionCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     primaryKey: true,

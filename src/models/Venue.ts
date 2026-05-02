@@ -12,6 +12,29 @@ import {
 import School from "./School";
 import VenuePicture from "./VenuePicture";
 
+// Interfaces
+export interface VenueAttributes {
+  id: number;
+  schoolId: number;
+  name: string;
+  address: string | null;
+  capacity: number | null;
+  isInternal: boolean;
+  venuePictures?: Array<{
+    id: number;
+    venueId: number;
+    pictureUrl: string
+  }>;
+}
+
+export interface VenueCreationAttributes {
+  schoolId: number;
+  name: string;
+  address?: string | null;
+  capacity?: number | null;
+  isInternal?: boolean;
+}
+
 @Table({
   tableName: 'venue',
   timestamps: false,
@@ -22,7 +45,7 @@ import VenuePicture from "./VenuePicture";
     }
   ]
 })
-class Venue extends Model {
+class Venue extends Model<VenueAttributes, VenueCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     primaryKey: true,
@@ -73,7 +96,7 @@ class Venue extends Model {
   school!: School;
 
   @HasMany(() => VenuePicture)
-  venuePictures!: Venue[];
+  venuePictures!: VenuePicture[];
 }
 
 export default Venue;

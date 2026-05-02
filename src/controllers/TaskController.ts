@@ -29,7 +29,7 @@ class TaskController {
   /** Obtém uma tarefa específica por ID */
   async getById(req: Request, res: Response, next: NextFunction) {
     try {
-      const task = await this.service.getById(BigInt(req.params.id));
+      const task = await this.service.getById(BigInt(req.params.id.toString()));
       res.status(200).send(task);
     } catch (error) {
       next(error);
@@ -49,7 +49,7 @@ class TaskController {
   /** Exclui uma tarefa existente */
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      await this.service.delete(BigInt(req.params.id));
+      await this.service.delete(BigInt(req.params.id.toString()));
       res.status(201).send({ message: "Tarefa removida com sucesso." });
     } catch (error) {
       next(error);
@@ -59,7 +59,7 @@ class TaskController {
   /** Atualiza uma tarefa existente */
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      await this.service.update(BigInt(req.params.id), req.body);
+      await this.service.update(BigInt(req.params.id.toString()), req.body);
       res.status(200).send({ message: "Tarefa atualizada com sucesso." });
     } catch (error) {
       next(error);

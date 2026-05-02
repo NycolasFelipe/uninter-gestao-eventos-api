@@ -1,4 +1,4 @@
-import { Op, Optional } from "sequelize";
+import { Op } from "sequelize";
 import ErrorMessage from "src/errors/ErrorMessage";
 import BaseRepository from "./BaseRepository";
 
@@ -13,7 +13,7 @@ import VenuePicture from "src/models/VenuePicture";
 import Subscription from "src/models/Subscription";
 
 // Interfaces
-import { IParams } from "src/interfaces/IParams";
+import { EventCreationAttributes, IEventParams } from "src/models/Event";
 
 class EventRepository extends BaseRepository<Event> {
   constructor() {
@@ -21,7 +21,7 @@ class EventRepository extends BaseRepository<Event> {
   }
 
   /** Cria um novo evento */
-  async create(data: Omit<Optional<any, string>, "id">): Promise<Event> {
+  async create(data: EventCreationAttributes): Promise<Event> {
     const conflictingEvents = await Event.findAll({
       where: {
         venueId: data.venueId,
@@ -53,7 +53,7 @@ class EventRepository extends BaseRepository<Event> {
   }
 
   /** Obtém todos os eventos */
-  async getAll(params: IParams): Promise<Event[]> {
+  async getAll(params: IEventParams): Promise<Event[]> {
     const statusNames = typeof params.status === 'string'
       ? params.status.split(',').map(s => s.trim())
       : params.status;
@@ -98,7 +98,7 @@ class EventRepository extends BaseRepository<Event> {
   }
 
   /** Obtém todos os eventos com detalhes */
-  async getAllDetailed(params: IParams): Promise<Event[]> {
+  async getAllDetailed(params: IEventParams): Promise<Event[]> {
     const statusValues = typeof params.status === 'string'
       ? params.status.split(',').map(s => s.trim())
       : params.status;
@@ -150,7 +150,7 @@ class EventRepository extends BaseRepository<Event> {
   }
 
   /** Obtém um evento específico por ID */
-  async getWithId(params: IParams): Promise<Event | null> {
+  async getWithId(params: IEventParams): Promise<Event | null> {
     const where = {
       id: params.eventId,
       ...(params && params.schoolId && {
@@ -201,7 +201,7 @@ class EventRepository extends BaseRepository<Event> {
   }
 
   /** Exclui um evento específico por ID */
-  async deleteById(params: IParams): Promise<number> {
+  async deleteById(params: IEventParams): Promise<number> {
     const where = {
       id: params.eventId,
       ...(params.organizerUserId && {

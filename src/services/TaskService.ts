@@ -1,24 +1,27 @@
 import ErrorMessage from "src/errors/ErrorMessage";
-import { ITaskCreate } from "src/interfaces/ITask";
-import Task from "src/models/Task";
+
+// Interfaces
+import { TaskAttributes, TaskCreationAttributes } from "src/models/Task";
+
+// Repositories
 import TaskRepository from "src/repositories/TaskRepository";
 
 /** Serviço para operações relacionadas a tarefas */
 class TaskService {
-  constructor(private readonly repository = TaskRepository) {}
+  constructor(private readonly repository = TaskRepository) { }
 
   /** Obtém todas as tarefas existentes */
-  async getAll(): Promise<Task[]> {
+  async getAll(): Promise<TaskAttributes[]> {
     return this.repository.getAll();
   }
 
   /** Obtém todas as tarefas de um evento por ID */
-  async getAllByEventId(id: number): Promise<Task[]> {
+  async getAllByEventId(id: number): Promise<TaskAttributes[]> {
     return this.repository.getAllByEventId(id);
   }
 
   /** Busca uma tarefa por ID */
-  async getById(id: bigint): Promise<Task> {
+  async getById(id: bigint): Promise<TaskAttributes> {
     const task = await this.repository.getById(id);
     if (!task) {
       throw new ErrorMessage(`Tarefa com id ${id} não encontrada.`, 404);
@@ -27,7 +30,7 @@ class TaskService {
   }
 
   /** Cria uma nova tarefa */
-  async create(data: ITaskCreate): Promise<Task> {
+  async create(data: TaskCreationAttributes): Promise<TaskAttributes> {
     return this.repository.create(data);
   }
 
@@ -41,7 +44,7 @@ class TaskService {
   }
 
   /** Atualiza dados de uma tarefa */
-  async update(id: bigint, data: Partial<Task>): Promise<void> {
+  async update(id: bigint, data: Partial<TaskCreationAttributes>): Promise<void> {
     // Verifica existência prévia
     await this.getById(id);
 

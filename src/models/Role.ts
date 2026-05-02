@@ -1,13 +1,24 @@
 import { BelongsToMany, Column, DataType, HasMany, Model, Table } from "sequelize-typescript";
-import RolePermission from "./RolePermission";
-import Permission from "./Permission";
+
+// Models
 import User from "./User";
+import Permission from "./Permission";
+import RolePermission from "./RolePermission";
+
+// Interfaces
+export interface RoleAttributes {
+  id: number;
+  roleName: string;
+  description: string | null;
+}
+
+export interface RoleCreationAttributes extends Omit<RoleAttributes, 'id'> { }
 
 @Table({
   tableName: 'role',
   timestamps: false
 })
-class Role extends Model {
+class Role extends Model<RoleAttributes, RoleCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     primaryKey: true,

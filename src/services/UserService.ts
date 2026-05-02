@@ -1,21 +1,30 @@
 import ErrorMessage from "src/errors/ErrorMessage";
-import { IUserCreate } from "src/interfaces/IUser";
-import Permission from "src/models/Permission";
-import User from "src/models/User";
-import UserRepository from "src/repositories/UserRepository";
+
+// Interfaces
+import { PermissionAttributes } from "src/models/Permission";
+import { UserAttributes, UserCreationAttributes, UserDetailAttributes } from "src/models/User";
+
+// Util
 import hashPassword from "src/util/hashPassword";
+
+// Repositories
+import UserRepository from "src/repositories/UserRepository";
+
+type UserCreateInput = Omit<UserCreationAttributes, "passwordHash"> & {
+  password: string;
+};
 
 /** Serviço para operações relacionadas a usuários */
 class UserService {
-  constructor(private readonly repository = UserRepository) {}
+  constructor(private readonly repository = UserRepository) { }
 
   /** Obtém todos os usuários */
-  async getAll(): Promise<User[]> {
+  async getAll(): Promise<UserAttributes[]> {
     return this.repository.getAll();
   }
 
   /** Busca um usuário por ID */
-  async getById(id: bigint): Promise<User> {
+  async getById(id: bigint): Promise<UserAttributes> {
     const user = await this.repository.getById(id);
     if (!user) {
       throw new ErrorMessage(`Usuário com id ${id} não encontrado.`, 404);
@@ -24,36 +33,37 @@ class UserService {
   }
 
   /** Busca um usuário por email */
-  async getByEmail(email: string): Promise<User |null> {
+  async getByEmail(email: string): Promise<UserAttributes | null> {
     return this.repository.getByEmail(email);
   }
 
   /** Obtém todos os usuários de uma escola específica */
-  async getAllBySchoolId(id: number): Promise<User[]> {
+  async getAllBySchoolId(id: number): Promise<UserAttributes[]> {
     return this.repository.getAllBySchoolId(id);
   }
 
   /** Obtém detalhes completos de um usuário (com relacionamentos) */
-  async getDetailById(id: bigint): Promise<User> {
+  async getDetailById(id: bigint): Promise<UserDetailAttributes> {
     const user = await this.repository.getDetailById(id);
     if (!user) {
       throw new ErrorMessage(`Usuário com id ${id} não encontrado.`, 404);
     }
-    return user;
+    return user.get({ plain: true }) as unknown as UserDetailAttributes;
   }
 
   /** Obtém todas as permissões de um usuário */
-  async getAllPermissions(id: bigint): Promise<Permission[]> {
+  async getAllPermissions(id: bigint): Promise<PermissionAttributes[]> {
     const userDetails = await this.getDetailById(id);
     return userDetails.role.permissions;
   }
 
   /** Cria um novo usuário */
-  async create(user: IUserCreate): Promise<User> {
+  async create(user: UserCreateInput): Promise<UserAttributes> {
     // Cria versão segura do usuário com hash da senha
-    const userWithHashPassword = {
-      ...user,
-      passwordHash: hashPassword(user.password)
+    const { password, ...safeUserData } = user;
+    const userWithHashPassword: UserCreationAttributes = {
+      ...safeUserData,
+      passwordHash: hashPassword(password)
     }
     return this.repository.create(userWithHashPassword);
   }
@@ -67,7 +77,7 @@ class UserService {
   }
 
   /** Atualiza um usuário existente */
-  async update(id: bigint, data: Partial<User>): Promise<void> {
+  async update(id: bigint, data: Partial<UserCreationAttributes>): Promise<void> {
     // Verifica existência antes de atualizar
     await this.getById(id);
 

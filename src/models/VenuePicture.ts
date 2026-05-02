@@ -10,6 +10,15 @@ import {
 // Models
 import Venue from "./Venue";
 
+// Interfaces
+export interface VenuePictureAttributes {
+  id: number;
+  venueId: number;
+  pictureUrl: string;
+}
+
+export interface VenuePictureCreationAttributes extends Omit<VenuePictureAttributes, 'id'> { }
+
 @Table({
   tableName: 'venue_picture',
   timestamps: false,
@@ -20,7 +29,7 @@ import Venue from "./Venue";
     }
   ]
 })
-class VenuePicture extends Model {
+class VenuePicture extends Model<VenuePictureAttributes, VenuePictureCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     primaryKey: true,

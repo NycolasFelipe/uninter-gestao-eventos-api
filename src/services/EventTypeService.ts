@@ -1,7 +1,12 @@
 import ErrorMessage from "src/errors/ErrorMessage";
-import { IEventTypeCreate } from "src/interfaces/IEventType";
-import EventType from "src/models/EventType";
+
+// Interfaces
+import { EventTypeAttributes, EventTypeCreationAttributes } from "src/models/EventType";
+
+// Repositories
 import EventTypeRepository from "src/repositories/EventTypeRepository";
+
+// Services
 import EventService from "./EventService";
 
 /** Serviço para operações relacionadas a tipos de eventos */
@@ -9,15 +14,15 @@ class EventTypeService {
   constructor(
     private readonly repository = EventTypeRepository,
     private readonly eventService = EventService
-  ) {}
+  ) { }
 
   /** Obtém todas os tipos de eventos existentes */
-  async getAll(): Promise<EventType[]> {
+  async getAll(): Promise<EventTypeAttributes[]> {
     return this.repository.getAll();
   }
 
   /** Busca um tipo de evento por ID */
-  async getById(id: number): Promise<EventType> {
+  async getById(id: number): Promise<EventTypeAttributes> {
     const eventType = await this.repository.getById(id);
     if (!eventType) {
       throw new ErrorMessage(`Tipo de evento com id ${id} não encontrado.`, 404);
@@ -26,7 +31,7 @@ class EventTypeService {
   }
 
   /** Cria um novo tipo de evento */
-  async create(data: IEventTypeCreate): Promise<EventType> {
+  async create(data: EventTypeCreationAttributes): Promise<EventTypeAttributes> {
     return this.repository.create(data);
   }
 
@@ -48,7 +53,7 @@ class EventTypeService {
   }
 
   /** Atualiza dados de um tipo de evento */
-  async update(id: number, data: Partial<EventType>): Promise<void> {
+  async update(id: number, data: Partial<EventTypeCreationAttributes>): Promise<void> {
     // Verifica existência prévia
     await this.getById(id);
 

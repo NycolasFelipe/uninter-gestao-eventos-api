@@ -1,6 +1,9 @@
 import ErrorMessage from "src/errors/ErrorMessage";
-import { IPermissionCreate } from "src/interfaces/IPermission";
-import Permission from "src/models/Permission";
+
+// Interfaces
+import { PermissionAttributes, PermissionCreationAttributes } from "src/models/Permission";
+
+// Repositories
 import PermissionRepository from "src/repositories/PermissionRepository";
 import RolePermissionRepository from "src/repositories/RolePermissionRepository";
 
@@ -9,15 +12,15 @@ class PermissionService {
   constructor(
     private readonly repository = PermissionRepository,
     private readonly rolePermissionRepository = RolePermissionRepository
-  ) {}
+  ) { }
 
   /** Obtém todas as permissões existentes */
-  async getAll(): Promise<Permission[]> {
+  async getAll(): Promise<PermissionAttributes[]> {
     return this.repository.getAll();
   }
 
   /** Busca uma permissão por ID */
-  async getById(id: number): Promise<Permission> {
+  async getById(id: number): Promise<PermissionAttributes> {
     const permission = await this.repository.getById(id);
     if (!permission) {
       throw new ErrorMessage(`Permissão com id ${id} não encontrada.`, 404);
@@ -26,7 +29,7 @@ class PermissionService {
   }
 
   /** Cria uma nova permissão */
-  async create(data: IPermissionCreate): Promise<Permission> {
+  async create(data: PermissionCreationAttributes): Promise<PermissionAttributes> {
     return this.repository.create(data);
   }
 
@@ -43,7 +46,7 @@ class PermissionService {
   }
 
   /** Atualiza dados de uma permissão */
-  async update(id: number, data: Partial<Permission>): Promise<void> {
+  async update(id: number, data: Partial<PermissionCreationAttributes>): Promise<void> {
     // Verifica existência prévia
     await this.getById(id);
 

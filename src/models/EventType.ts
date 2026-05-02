@@ -1,5 +1,14 @@
 import { Column, DataType, Model, Table } from "sequelize-typescript";
 
+// Interfaces
+export interface EventTypeAttributes {
+  id: number;
+  name: string;
+  description: string | null;
+}
+
+export interface EventTypeCreationAttributes extends Omit<EventTypeAttributes, 'id'> { }
+
 @Table({
   tableName: 'event_type',
   timestamps: false,
@@ -11,7 +20,7 @@ import { Column, DataType, Model, Table } from "sequelize-typescript";
     }
   ]
 })
-class EventType extends Model {
+class EventType extends Model<EventTypeAttributes, EventTypeCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     primaryKey: true,
