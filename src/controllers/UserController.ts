@@ -1,8 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 
-// Interfaces
-import { IUserCreateResponse } from "src/interfaces/IUser";
-
 // Util
 import checkUserPermission from "src/util/checkUserPermission";
 import extractTokenId from "src/util/extractTokenId";
@@ -11,7 +8,7 @@ import extractTokenId from "src/util/extractTokenId";
 import UserService from "src/services/UserService";
 
 class UserController {
-  constructor(private readonly service = UserService) {}
+  constructor(private readonly service = UserService) { }
 
   /** Obtém todos os usuários */
   async getAll(req: Request, res: Response, next: NextFunction) {
@@ -26,9 +23,8 @@ class UserController {
   /** Obtém um usuário por ID */
   async getById(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await this.service.getById(BigInt(req.params.id));
-      const userData = user.get({ plain: true });
-      const { passwordHash, ...userWithoutPassword } = userData;
+      const user = await this.service.getById(BigInt(req.params.id.toString()));
+      const { passwordHash, ...userWithoutPassword } = user;
       res.status(200).send(userWithoutPassword);
     } catch (error) {
       next(error);
@@ -54,7 +50,7 @@ class UserController {
         if (!hasPermission) {
           res.status(403).json({ message: 'Acesso não autorizado para visualização de outros usuários' });
         }
-        userId = BigInt(requestedId);
+        userId = BigInt(requestedId.toString());
       }
 
       // Obter e retornar os dados do usuário
@@ -70,11 +66,10 @@ class UserController {
   async create(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await this.service.create(req.body);
-      const userData = user.get({ plain: true });
-      const { passwordHash, ...userWithoutPassword } = userData; // Remove senha
+      const { passwordHash, ...userWithoutPassword } = user; // Remove senha
 
       // Retorna usuário criado sem senha com tipo específico
-      res.status(201).send(userWithoutPassword as unknown as IUserCreateResponse);
+      res.status(201).send(userWithoutPassword);
     } catch (error) {
       next(error);
     }
@@ -83,7 +78,7 @@ class UserController {
   /** Exclui um usuário */
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      await this.service.delete(BigInt(req.params.id));
+      await this.service.delete(BigInt(req.params.id.toString()));
       res.status(201).send({ message: "Usuário removido com sucesso." });
     } catch (error) {
       next(error);
@@ -93,7 +88,7 @@ class UserController {
   /** Atualiza um usuário existente */
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      await this.service.update(BigInt(req.params.id), req.body);
+      await this.service.update(BigInt(req.params.id.toString()), req.body);
       res.status(200).send({ message: "Usuário atualizado com sucesso." });
     } catch (error) {
       next(error);
