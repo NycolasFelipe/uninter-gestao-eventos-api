@@ -24,7 +24,7 @@ class VenueRepository extends BaseRepository<Venue> {
   }
 
   /** Obtém um local pelo ID com as imagens associadas */
-  async getById(id: number | bigint): Promise<Venue | null> {
+  async getById(id: number): Promise<Venue | null> {
     return this.model.findOne({
       where: { id },
       include: [{

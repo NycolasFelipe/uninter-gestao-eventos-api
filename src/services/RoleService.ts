@@ -1,8 +1,13 @@
 import ErrorMessage from "src/errors/ErrorMessage";
-import { IRoleCreate } from "src/interfaces/IRole";
-import Role from "src/models/Role";
-import RolePermissionRepository from "src/repositories/RolePermissionRepository";
+
+// Interfaces
+import { RoleAttributes, RoleCreationAttributes } from "src/models/Role";
+
+// Repositoriees
 import RoleRepository from "src/repositories/RoleRepository";
+import RolePermissionRepository from "src/repositories/RolePermissionRepository";
+
+// Services
 import PermissionService from "./PermissionService";
 
 /** Serviço para operações relacionadas a cargos */
@@ -11,20 +16,20 @@ class RoleService {
     private readonly repository = RoleRepository,
     private readonly rolePermissionRepository = RolePermissionRepository,
     private readonly permissionService = PermissionService
-  ) {}
+  ) { }
 
   /** Obtém todos os cargos existentes */
-  async getAll(): Promise<Role[]> {
+  async getAll(): Promise<RoleAttributes[]> {
     return this.repository.getAll();
   }
 
   /** Obtém todos os cargos e os usuários vinculados */
-  async getAllWithUsers(): Promise<Role[]> {
+  async getAllWithUsers(): Promise<RoleAttributes[]> {
     return this.repository.getAllWithUsers();
   }
 
   /** Busca um cargo por ID */
-  async getById(id: number): Promise<Role> {
+  async getById(id: number): Promise<RoleAttributes> {
     const role = await this.repository.getById(id);
     if (!role) {
       throw new ErrorMessage(`Cargo com id ${id} não encontrado.`, 404);
@@ -33,7 +38,7 @@ class RoleService {
   }
 
   /** Cria uma novo cargo */
-  async create(data: IRoleCreate): Promise<Role> {
+  async create(data: RoleCreationAttributes): Promise<RoleAttributes> {
     return this.repository.create(data);
   }
 
@@ -84,7 +89,7 @@ class RoleService {
   }
 
   /** Atualiza dados de um cargo */
-  async update(id: number, data: Partial<Role>): Promise<void> {
+  async update(id: number, data: Partial<RoleCreationAttributes>): Promise<void> {
     // Verifica existência prévia
     await this.getById(id);
 

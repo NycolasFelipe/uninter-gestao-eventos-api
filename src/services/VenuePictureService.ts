@@ -1,13 +1,16 @@
 import ErrorMessage from "src/errors/ErrorMessage";
-import { IVenuePictureCreate } from "src/interfaces/IVenuePicture";
-import VenuePicture from "src/models/VenuePicture";
+
+// Interfaces
+import { VenuePictureAttributes, VenuePictureCreationAttributes } from "src/models/VenuePicture";
+
+// Repositories
 import VenuePictureRepository from "src/repositories/VenuePictureRepository";
 
 class VenuePictureService {
-  constructor(private readonly repository = VenuePictureRepository) {}
+  constructor(private readonly repository = VenuePictureRepository) { }
 
   /** Obtém todas as fotos de locais cadastradas */
-  async getAll(query: { id?: string; venueId?: string }): Promise<VenuePicture[]> {
+  async getAll(query: { id?: string; venueId?: string }): Promise<VenuePictureAttributes[]> {
     if (query.id) {
       const picture = await this.getById(Number(query.id));
       return picture ? [picture] : [];
@@ -19,12 +22,12 @@ class VenuePictureService {
   }
 
   /** Busca fotos associadas a um local específico */
-  async getAllByVenueId(id: number): Promise<VenuePicture[]> {
+  async getAllByVenueId(id: number): Promise<VenuePictureAttributes[]> {
     return this.repository.getAllByVenueId(id);
   }
 
   /** Busca uma foto específica por ID */
-  async getById(id: number): Promise<VenuePicture> {
+  async getById(id: number): Promise<VenuePictureAttributes> {
     const venuePicture = await this.repository.getById(id);
     if (!venuePicture) {
       throw new ErrorMessage(`Local com id ${id} não encontrado.`, 404);
@@ -33,7 +36,7 @@ class VenuePictureService {
   }
 
   /** Cria uma nova foto de local */
-  async create(data: IVenuePictureCreate[]): Promise<void> {
+  async create(data: VenuePictureCreationAttributes[]): Promise<void> {
     for (const item of data) {
       await this.repository.create(item);
     }
@@ -48,7 +51,7 @@ class VenuePictureService {
   }
 
   /** Atualiza os dados de uma foto de local */
-  async update(id: number, data: Partial<VenuePicture>): Promise<void> {
+  async update(id: number, data: Partial<VenuePictureCreationAttributes>): Promise<void> {
     // Verificação de existência
     await this.getById(id);
 

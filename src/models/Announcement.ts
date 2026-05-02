@@ -30,6 +30,23 @@ export enum TargetAudienceType {
   SpecificSchools = "SpecificSchools",
 }
 
+// Interfaces
+export interface AnnouncementAttributes {
+  id: number;
+  eventId: number | null;
+  authorUserId: number | bigint | null;
+  schoolId: number | null;
+  title: string;
+  content: string | null;
+  publishDate: Date;
+  expiryDate: Date | null;
+  status: AnnouncementStatus;
+  targetAudienceType: TargetAudienceType;
+  targetAudienceIds?: object | null;
+}
+
+export interface AnnouncementCreationAttributes extends Omit<AnnouncementAttributes, "id"> { }
+
 @Table({
   tableName: 'announcement',
   timestamps: false,
@@ -48,7 +65,7 @@ export enum TargetAudienceType {
     }
   ]
 })
-class Announcement extends Model {
+class Announcement extends Model<AnnouncementAttributes, AnnouncementCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     primaryKey: true,
@@ -71,7 +88,7 @@ class Announcement extends Model {
     allowNull: true,
     field: 'authorUserId'
   })
-  authorUserId!: bigint | null;
+  authorUserId!: number | bigint | null;
 
   @ForeignKey(() => School)
   @Column({

@@ -8,6 +8,7 @@ class AnnouncementRepository extends BaseRepository<Announcement> {
     super(Announcement);
   }
 
+  /** Obtém todos os anúncios de uma escola por ID */
   async getAllBySchoolId(schoolId: number): Promise<Announcement[]> {
     return this.model.findAll({ where: { schoolId } });
   }

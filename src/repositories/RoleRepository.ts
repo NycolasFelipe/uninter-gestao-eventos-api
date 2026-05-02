@@ -11,7 +11,7 @@ class RoleRepository extends BaseRepository<Role> {
   }
 
   /** Obtém todos os papéis */
-  getAll(): Promise<Role[]> {
+  async getAll(): Promise<Role[]> {
     return this.model.findAll({
       include: [{
         model: Permission,
@@ -22,7 +22,7 @@ class RoleRepository extends BaseRepository<Role> {
   }
 
   /** Obtém todos os papéis com os usuários associados */
-  getAllWithUsers(): Promise<Role[]> {
+  async getAllWithUsers(): Promise<Role[]> {
     return this.model.findAll({
       include: [
         {
@@ -39,7 +39,7 @@ class RoleRepository extends BaseRepository<Role> {
   }
 
   /** Obtém um papel específico por ID */
-  getById(id: number | bigint): Promise<Role | null> {
+  async getById(id: number): Promise<Role | null> {
     return this.model.findOne({
       where: { id },
       include: [{

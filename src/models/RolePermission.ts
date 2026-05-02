@@ -11,6 +11,15 @@ import {
 import Role from "./Role";
 import Permission from "./Permission";
 
+// Interfaces
+export interface RolePermissionAttributes {
+  id: number;
+  roleId: number;
+  permissionId: number;
+}
+
+export interface RolePermissionCreationAttributes extends Omit<RolePermissionAttributes, "id"> { }
+
 @Table({
   tableName: 'role_permission',
   timestamps: false,
@@ -25,7 +34,7 @@ import Permission from "./Permission";
     }
   ]
 })
-class RolePermission extends Model {
+class RolePermission extends Model<RolePermissionAttributes, RolePermissionCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     primaryKey: true,

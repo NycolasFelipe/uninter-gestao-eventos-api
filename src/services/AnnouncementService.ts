@@ -1,24 +1,27 @@
 import ErrorMessage from "src/errors/ErrorMessage";
-import { IAnnouncementCreate } from "src/interfaces/IAnnouncement";
-import Announcement from "src/models/Announcement";
+
+// Interfaces
+import { AnnouncementAttributes, AnnouncementCreationAttributes } from "src/models/Announcement";
+
+// Repositories
 import AnnouncementRepository from "src/repositories/AnnouncementRepository";
 
 /** Serviço para operações relacionadas a anúncios */
 class AnnouncementService {
-  constructor(private readonly repository = AnnouncementRepository) {}
+  constructor(private readonly repository = AnnouncementRepository) { }
 
   /** Obtém todos os anúncios existentes */
-  async getAll(): Promise<Announcement[]> {
+  async getAll(): Promise<AnnouncementAttributes[]> {
     return this.repository.getAll();
   }
 
   /** Busca todos os anúncios de uma escola por ID */
-  async getAllBySchoolId(id: number): Promise<Announcement[]> {
+  async getAllBySchoolId(id: number): Promise<AnnouncementAttributes[]> {
     return this.repository.getAllBySchoolId(id);
   }
 
   /** Busca um anúncio por ID */
-  async getById(id: number): Promise<Announcement> {
+  async getById(id: number): Promise<AnnouncementAttributes> {
     const announcement = await this.repository.getById(id);
     if (!announcement) {
       throw new ErrorMessage(`Anúncio com id ${id} não encontrado.`, 404);
@@ -27,7 +30,7 @@ class AnnouncementService {
   }
 
   /** Cria um novo anúncio */
-  async create(data: IAnnouncementCreate): Promise<Announcement> {
+  async create(data: AnnouncementCreationAttributes): Promise<AnnouncementAttributes> {
     return this.repository.create(data);
   }
 
@@ -41,7 +44,7 @@ class AnnouncementService {
   }
 
   /** Atualiza dados de um anúncio */
-  async update(id: number, data: Partial<Announcement>): Promise<void> {
+  async update(id: number, data: Partial<AnnouncementCreationAttributes>): Promise<void> {
     // Verifica existência prévia
     await this.getById(id);
 

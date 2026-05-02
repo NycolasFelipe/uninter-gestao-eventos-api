@@ -1,10 +1,11 @@
 import ErrorMessage from "src/errors/ErrorMessage";
-import { ISchoolCreate } from "src/interfaces/ISchool";
-import SchoolRepository from "src/repositories/SchoolRepository";
 
-// Models
-import School from "src/models/School";
-import User from "src/models/User";
+// Interfaces
+import { UserAttributes } from "src/models/User";
+import { SchoolAttributes, SchoolCreationAttributes } from "src/models/School";
+
+// Repositories
+import SchoolRepository from "src/repositories/SchoolRepository";
 
 // Services
 import AnnouncementService from "./AnnouncementService";
@@ -20,20 +21,20 @@ class SchoolService {
     private readonly eventService = EventService,
     private readonly userService = UserService,
     private readonly venueService = VenueService
-  ) {}
+  ) { }
 
   /** Obtém todas as escolas cadastradas */
-  async getAll(): Promise<School[]> {
+  async getAll(): Promise<SchoolAttributes[]> {
     return this.repository.getAll();
   }
 
   /** Obtém todos os usuários associados a uma escola */
-  async getAllUsersById(id: number): Promise<User[]> {
+  async getAllUsersById(id: number): Promise<UserAttributes[]> {
     return this.userService.getAllBySchoolId(id);
   }
 
   /** Busca uma escola por ID */
-  async getById(id: number): Promise<School> {
+  async getById(id: number): Promise<SchoolAttributes> {
     const school = await this.repository.getById(id);
     if (!school) {
       throw new ErrorMessage(`Escola com id ${id} não encontrada.`, 404);
@@ -42,7 +43,7 @@ class SchoolService {
   }
 
   /** Cria uma nova escola */
-  async create(data: ISchoolCreate): Promise<School> {
+  async create(data: SchoolCreationAttributes): Promise<SchoolAttributes> {
     return this.repository.create(data);
   }
 
@@ -56,7 +57,7 @@ class SchoolService {
 
     for (const user of users) {
       try {
-        await this.userService.update(user.id, { schoolId: null });
+        await this.userService.update(BigInt(user.id), { schoolId: null });
       } catch (error) {
         console.error(`Erro ao atualizar usuário ${user.id}.`, error);
       }
@@ -96,7 +97,7 @@ class SchoolService {
   }
 
   /** Atualiza dados de uma escola */
-  async update(id: number, data: Partial<School>): Promise<void> {
+  async update(id: number, data: Partial<SchoolCreationAttributes>): Promise<void> {
     // Verifica existência prévia
     await this.getById(id);
 
