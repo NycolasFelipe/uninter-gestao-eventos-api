@@ -1,0 +1,25 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "..",
+    "paths": {
+      "src/*": [
+        "src/*"
+      ]
+    },
+    "typeRoots": [
+      "../node_modules/@types",
+      "../node_modules",
+      "../src/types"
+    ],
+    "types": [
+      "node",
+      "vitest/globals"
+    ],
+    "noEmit": true,
+  },
+  "include": [
+    "**/*.ts"
+  ],
+  "exclude": []
+}
