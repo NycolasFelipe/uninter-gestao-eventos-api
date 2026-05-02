@@ -6,7 +6,9 @@
     "dev": "nodemon --exec ts-node -r tsconfig-paths/register src/server.ts",
     "compile": "npx tsc",
     "start": "node ./dist/server.js",
-    "test": "vitest",
+    "test": "vitest run",
+    "test:unit": "vitest run tests/unit --passWithNoTests",
+    "test:integration": "vitest run tests/integration --passWithNoTests",
     "test:watch": "vitest --watch"
   },
   "keywords": [],
