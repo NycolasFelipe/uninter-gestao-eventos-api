@@ -1,6 +1,6 @@
 import { Sequelize } from 'sequelize-typescript';
-import * as dotenv from 'dotenv';
 import models from '../models/index';
+import env from './env';
 
 // Seeds
 import seedPermissions from 'src/seeds/permissions';
@@ -14,34 +14,21 @@ import seedEventTypes from 'src/seeds/eventType';
 import seedEvents from 'src/seeds/events';
 import seedSubscriptions from 'src/seeds/subscriptions';
 
-dotenv.config({ path: process.env.NODE_ENV === 'test' ? ".env.test" : ".env" });
-
-// Recuperar e validar variáveis de ambiente
-const DB_NAME = process.env.DB_NAME;
-const DB_USER = process.env.DB_USER;
-const DB_PASSWORD = process.env.DB_PASSWORD;
-const DB_HOST = process.env.DB_HOST;
-const DB_PORT = Number(process.env.DB_PORT);
-
-if (!DB_NAME || !DB_USER || !DB_PASSWORD || !DB_HOST || !DB_PORT) {
-  throw new Error("Variáveis de ambiente necessárias não configuradas");
-}
-
 // Função assíncrona para configuração do banco
 async function setupDatabase() {
   // Criar banco se não existir
   const setupSequelize = new Sequelize({
     dialect: "mysql",
-    username: DB_USER,
-    password: DB_PASSWORD,
-    host: DB_HOST,
-    port: DB_PORT,
+    username: env.DB_USER,
+    password: env.DB_PASSWORD,
+    host: env.DB_HOST,
+    port: env.DB_PORT,
     logging: false
   });
 
   try {
-    await setupSequelize.query(`CREATE DATABASE IF NOT EXISTS ${DB_NAME}`);
-    console.log(`Banco ${DB_NAME} verificado/criado com sucesso`);
+    await setupSequelize.query(`CREATE DATABASE IF NOT EXISTS ${env.DB_NAME}`);
+    console.log(`Banco ${env.DB_NAME} verificado/criado com sucesso`);
   } finally {
     await setupSequelize.close();
   }
@@ -49,11 +36,11 @@ async function setupDatabase() {
   // Criar instância principal conectada ao banco
   const mainSequelize = new Sequelize({
     dialect: "mysql",
-    database: DB_NAME,
-    username: DB_USER,
-    password: DB_PASSWORD,
-    host: DB_HOST,
-    port: DB_PORT,
+    database: env.DB_NAME,
+    username: env.DB_USER,
+    password: env.DB_PASSWORD,
+    host: env.DB_HOST,
+    port: env.DB_PORT,
     logging: false,
     models
   });

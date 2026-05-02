@@ -1,6 +1,6 @@
 import EventTypeRepository from "src/repositories/EventTypeRepository";
 
-const eventTypeRepository = new EventTypeRepository();
+const eventTypeRepository = EventTypeRepository;
 
 async function seedEventTypes() {
   const eventTypes = [

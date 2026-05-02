@@ -1,20 +1,22 @@
 import { Request, Response, NextFunction } from "express";
+
+// Interfaces
 import { IUserCreateResponse } from "src/interfaces/IUser";
-import UserService from "src/services/UserService";
 
 // Util
 import checkUserPermission from "src/util/checkUserPermission";
 import extractTokenId from "src/util/extractTokenId";
 
-// Instância do serviço de usuários
-const service = new UserService();
+// Services
+import UserService from "src/services/UserService";
 
-/** Controlador para operações relacionadas a usuários */
 class UserController {
+  constructor(private readonly service = UserService) {}
+
   /** Obtém todos os usuários */
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const users = await service.getAll();
+      const users = await this.service.getAll();
       res.status(200).send(users);
     } catch (error) {
       next(error);
@@ -24,7 +26,7 @@ class UserController {
   /** Obtém um usuário por ID */
   async getById(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await service.getById(BigInt(req.params.id));
+      const user = await this.service.getById(BigInt(req.params.id));
       const userData = user.get({ plain: true });
       const { passwordHash, ...userWithoutPassword } = userData;
       res.status(200).send(userWithoutPassword);
@@ -56,7 +58,7 @@ class UserController {
       }
 
       // Obter e retornar os dados do usuário
-      const user = await service.getDetailById(userId);
+      const user = await this.service.getDetailById(userId);
       res.status(200).json(user);
 
     } catch (error) {
@@ -67,7 +69,7 @@ class UserController {
   /** Cria um novo usuário */
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await service.create(req.body);
+      const user = await this.service.create(req.body);
       const userData = user.get({ plain: true });
       const { passwordHash, ...userWithoutPassword } = userData; // Remove senha
 
@@ -81,7 +83,7 @@ class UserController {
   /** Exclui um usuário */
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      await service.delete(BigInt(req.params.id));
+      await this.service.delete(BigInt(req.params.id));
       res.status(201).send({ message: "Usuário removido com sucesso." });
     } catch (error) {
       next(error);
@@ -91,7 +93,7 @@ class UserController {
   /** Atualiza um usuário existente */
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      await service.update(BigInt(req.params.id), req.body);
+      await this.service.update(BigInt(req.params.id), req.body);
       res.status(200).send({ message: "Usuário atualizado com sucesso." });
     } catch (error) {
       next(error);
@@ -99,4 +101,4 @@ class UserController {
   }
 }
 
-export default UserController;
+export default new UserController();

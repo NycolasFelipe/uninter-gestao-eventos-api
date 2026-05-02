@@ -9,4 +9,4 @@ class PermissionRepository extends BaseRepository<Permission> {
   }
 }
 
-export default PermissionRepository;
+export default new PermissionRepository();

@@ -6,6 +6,7 @@ import BaseRepository from "./BaseRepository";
 import Event from "src/models/Event";
 import School from "src/models/School";
 import EventType from "src/models/EventType";
+import EventUpdates from "src/models/EventUpdates";
 import User from "src/models/User";
 import Venue from "src/models/Venue";
 import VenuePicture from "src/models/VenuePicture";
@@ -13,14 +14,13 @@ import Subscription from "src/models/Subscription";
 
 // Interfaces
 import { IParams } from "src/interfaces/IParams";
-import EventUpdates from "src/models/EventUpdates";
-
 
 class EventRepository extends BaseRepository<Event> {
   constructor() {
     super(Event);
   }
 
+  /** Cria um novo evento */
   async create(data: Omit<Optional<any, string>, "id">): Promise<Event> {
     const conflictingEvents = await Event.findAll({
       where: {
@@ -52,6 +52,7 @@ class EventRepository extends BaseRepository<Event> {
     return this.model.create(data);
   }
 
+  /** Obtém todos os eventos */
   async getAll(params: IParams): Promise<Event[]> {
     const statusNames = typeof params.status === 'string'
       ? params.status.split(',').map(s => s.trim())
@@ -96,6 +97,7 @@ class EventRepository extends BaseRepository<Event> {
     });
   }
 
+  /** Obtém todos os eventos com detalhes */
   async getAllDetailed(params: IParams): Promise<Event[]> {
     const statusValues = typeof params.status === 'string'
       ? params.status.split(',').map(s => s.trim())
@@ -147,6 +149,7 @@ class EventRepository extends BaseRepository<Event> {
     });
   }
 
+  /** Obtém um evento específico por ID */
   async getWithId(params: IParams): Promise<Event | null> {
     const where = {
       id: params.eventId,
@@ -197,6 +200,7 @@ class EventRepository extends BaseRepository<Event> {
     });
   }
 
+  /** Exclui um evento específico por ID */
   async deleteById(params: IParams): Promise<number> {
     const where = {
       id: params.eventId,

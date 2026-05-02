@@ -1,6 +1,6 @@
 import RolePermissionRepository from "src/repositories/RolePermissionRepository";
 
-const rolePermissionRepository = new RolePermissionRepository();
+const rolePermissionRepository = RolePermissionRepository;
 
 async function seedRolesPermissions() {
   const rolesPermissions = [

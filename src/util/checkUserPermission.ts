@@ -1,7 +1,6 @@
 import UserService from "src/services/UserService";
 
-// Instância do serviço de usuários
-const service = new UserService();
+const service = UserService;
 
 const checkUserPermission = async (userId: bigint, permissionUser: string): Promise<boolean> => {
   const permissions = await service.getAllPermissions(userId);

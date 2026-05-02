@@ -1,33 +1,24 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import dotenv from 'dotenv';
 
 // Util e erros internos
 import ErrorMessage from "src/errors/ErrorMessage";
-import warnMissingEnv from "src/util/warnMissingEnv";
+
+// Context
 import { requestContext } from "src/context/requestContext";
 
-// Carrega as variáveis de ambiente
-dotenv.config();
+// Config
+import env from "src/config/env";
 
-// Variáveis de ambiente necessárias
-const env = {
-  ADMIN_FIXED_TOKEN: process.env.ADMIN_FIXED_TOKEN!,
-  SECRET: process.env.SECRET!
-}
-
-// Valida as variáveis de ambiente e alerta sobre quaisquer faltantes
-warnMissingEnv(env);
-
-// Desestruturação das variáveis de ambiente após validação
-const { ADMIN_FIXED_TOKEN, SECRET } = env;
-
+/** 
+ * Middleware para autenticação de JWT
+ */
 const authenticateJWT = (req: Request, res: Response, next: NextFunction): void => {
   // Primeiro verifica o token fixo da equipe admin
   const fixedToken = req.headers["x-admin-token"];
 
   // Se o token fixo foi enviado e é válido, permite acesso
-  if (fixedToken && fixedToken === ADMIN_FIXED_TOKEN) {
+  if (fixedToken && fixedToken === env.ADMIN_FIXED_TOKEN) {
     return next();
   }
 
@@ -44,7 +35,7 @@ const authenticateJWT = (req: Request, res: Response, next: NextFunction): void 
   }
 
   // Verifica o token JWT
-  jwt.verify(token, SECRET, (error, payload) => {
+  jwt.verify(token, env.SECRET, (error, payload) => {
     const handleError = (message: string) => {
       throw new ErrorMessage(message, 401);
     };

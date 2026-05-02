@@ -5,24 +5,27 @@ import RolePermissionRepository from "src/repositories/RolePermissionRepository"
 import RoleRepository from "src/repositories/RoleRepository";
 import PermissionService from "./PermissionService";
 
-// Instância do repositório de cargos
-const repository = new RoleRepository();
-
 /** Serviço para operações relacionadas a cargos */
 class RoleService {
+  constructor(
+    private readonly repository = RoleRepository,
+    private readonly rolePermissionRepository = RolePermissionRepository,
+    private readonly permissionService = PermissionService
+  ) {}
+
   /** Obtém todos os cargos existentes */
   async getAll(): Promise<Role[]> {
-    return repository.getAll();
+    return this.repository.getAll();
   }
 
   /** Obtém todos os cargos e os usuários vinculados */
   async getAllWithUsers(): Promise<Role[]> {
-    return repository.getAllWithUsers();
+    return this.repository.getAllWithUsers();
   }
 
   /** Busca um cargo por ID */
   async getById(id: number): Promise<Role> {
-    const role = await repository.getById(id);
+    const role = await this.repository.getById(id);
     if (!role) {
       throw new ErrorMessage(`Cargo com id ${id} não encontrado.`, 404);
     }
@@ -31,7 +34,7 @@ class RoleService {
 
   /** Cria uma novo cargo */
   async create(data: IRoleCreate): Promise<Role> {
-    return repository.create(data);
+    return this.repository.create(data);
   }
 
   /** Exclui um cargo existente com tratamento de dependências */
@@ -40,20 +43,19 @@ class RoleService {
     await this.getById(id);
 
     // Busca todas as permissões vinculadas ao cargo
-    const rolePermissionRepository = new RolePermissionRepository();
-    const rolePermissions = await rolePermissionRepository.getAllByRoleId(id);
+    const rolePermissions = await this.rolePermissionRepository.getAllByRoleId(id);
 
     // Remove todos as associações de permissões vinculadas ao cargo
     for (const permission of rolePermissions) {
       try {
-        await rolePermissionRepository.deleteByRoleId(id, permission.id);
+        await this.rolePermissionRepository.deleteByRoleId(id, permission.id);
       } catch (error) {
         console.error(`Erro ao atualizar cargo ${id}`, error);
       }
     }
 
     // Executa exclusão após remover dependências
-    await repository.delete(id);
+    await this.repository.delete(id);
   }
 
   /** Vincular/Desvincular permissões a/de um cargo */
@@ -67,20 +69,17 @@ class RoleService {
     }
 
     // Validar existência das permissões
-    const permissionService = new PermissionService();
     for (const permissionId of permissionsIds) {
-      await permissionService.getById(permissionId);
+      await this.permissionService.getById(permissionId);
     }
 
     // Atualizar permissões
-    const rolePermissionRepository = new RolePermissionRepository();
-
     // Remover permissões existentes
-    await rolePermissionRepository.deleteByRoleId(id);
+    await this.rolePermissionRepository.deleteByRoleId(id);
 
     // Adicionar novas permissões
     for (const permissionId of permissionsIds) {
-      await rolePermissionRepository.create({ roleId: id, permissionId });
+      await this.rolePermissionRepository.create({ roleId: id, permissionId });
     }
   }
 
@@ -90,11 +89,11 @@ class RoleService {
     await this.getById(id);
 
     // Executa atualização
-    const affectedRows = await repository.update(id, data);
+    const affectedRows = await this.repository.update(id, data);
     if (affectedRows === 0) {
       throw new ErrorMessage(`Nenhum dado foi alterado para o cargo ${id}.`, 409);
     }
   }
 }
 
-export default RoleService;
+export default new RoleService();

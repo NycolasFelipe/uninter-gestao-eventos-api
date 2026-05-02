@@ -1,6 +1,6 @@
 import VenuePictureRepository from "src/repositories/VenuePictureRepository";
 
-const venuePictureRepository = new VenuePictureRepository();
+const venuePictureRepository = VenuePictureRepository;
 
 async function seedVenuePictures() {
   const venuePictures = [
